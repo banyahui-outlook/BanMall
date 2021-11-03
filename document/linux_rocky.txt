@@ -41,6 +41,8 @@ vi /etc/docker/daemon.json
 
 
 ----------------------- mysql standalone -----------------------
+###https://blog.csdn.net/king_qc/article/details/94454319
+###https://www.cnblogs.com/l10n/p/12606582.html
 ###https://www.cnblogs.com/hu308830232/p/15211720.html
 ###https://registry.hub.docker.com/_/mysql
 
@@ -50,6 +52,22 @@ sudo docker run -itd -p 3306:3306 \
 -e MYSQL_ROOT_PASSWORD=ban \
 --privileged=true \
 mysql
+
+sudo docker run -itd -p 3306:3306 \
+--name=mysql_standalone3306 \
+-v /home/mysql/standalone3306/data:/var/lib/mysql \
+-v /home/mysql/standalone3306/config:/etc/mysql/conf.d \
+-e MYSQL_ROOT_PASSWORD=ban \
+--privileged=true \
+mysql
+%%%%%%%%%mysqld.conf%%%%%%%%%
+[client]
+default-character-set = utf8mb4
+[mysql]
+default-character-set = utf8mb4
+[mysqld]
+character-set-server = utf8mb4
+collation-server = utf8mb4_unicode_ci
 
 
 
@@ -64,12 +82,16 @@ sudo docker run -itd -p 3307:3306 \
 --privileged=true \
 mysql
 
+
+
 sudo docker run -itd -p 3307:3306 \
 --name=mysql_cluster_slave3307 \
 -v /home/mysql/cluster3307/data:/var/lib/mysql \
 -e MYSQL_ROOT_PASSWORD=ban \
 --privileged=true \
 mysql
+
+
 
 CHANGE MASTER TO master_host = '192.168.137.21',
 master_port = 3307,
