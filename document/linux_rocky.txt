@@ -41,26 +41,22 @@ vi /etc/docker/daemon.json
 
 
 ----------------------- mysql standalone -----------------------
+###https://registry.hub.docker.com/_/mysql
 ###https://blog.csdn.net/king_qc/article/details/94454319
 ###https://www.cnblogs.com/l10n/p/12606582.html
+###https://www.cnblogs.com/clement-jiao/articles/9032193.html
 ###https://www.cnblogs.com/hu308830232/p/15211720.html
-###https://registry.hub.docker.com/_/mysql
+###https://www.freebytes.net/it/java/dokcer-mysql-binlog.html
 
-sudo docker run -itd -p 3306:3306 \
---name=mysql_standalone3306 \
--v /home/mysql/standalone3306/data:/var/lib/mysql \
--e MYSQL_ROOT_PASSWORD=ban \
---privileged=true \
-mysql
+-v /your_directory/mysql/data:/var/lib/mysql	挂载数据库数据
+-v /your_directory/mysql/conf:/etc/mysql/conf.d	挂载配置文件
+-v /your_directory /mysql/log:/var/log/mysql	挂载数据库日志
+-e MYSQL_ROOT_PASSWORD=your_password	数据库root用户的密码
+mysql                                            		镜像名
+--name your_db_name			定义的容器名
+-d					后台运行容器
 
-sudo docker run -itd -p 3306:3306 \
---name=mysql_standalone3306 \
--v /home/mysql/standalone3306/data:/var/lib/mysql \
--v /home/mysql/standalone3306/config:/etc/mysql/conf.d \
--e MYSQL_ROOT_PASSWORD=ban \
---privileged=true \
-mysql
-%%%%%%%%%mysqld.conf%%%%%%%%%
+%%%%%%%%%my.cnf%%%%%%%%%
 [client]
 default-character-set = utf8mb4
 [mysql]
@@ -68,6 +64,29 @@ default-character-set = utf8mb4
 [mysqld]
 character-set-server = utf8mb4
 collation-server = utf8mb4_unicode_ci
+back_log = 512
+key_buffer_size = 64M
+max_connections = 200
+log-bin = mysql-bin  
+server-id = 1
+binlog_format = MIXED
+expire_logs_days = 30  
+
+
+sudo docker run -itd -p 3306:3306 \
+--name=mysql_standalone3306 \
+-e MYSQL_ROOT_PASSWORD=ban \
+--privileged=true \
+mysql
+
+sudo docker run -itd -p 3306:3306 \
+--name=mysql_standalone3306 \
+-v /home/mysql/standalone3306/data:/var/lib/mysql \
+-v /home/mysql/standalone3306/conf:/etc/mysql/conf.d \
+-v /home/mysql/standalone3306/log:/var/log/mysql \
+-e MYSQL_ROOT_PASSWORD=ban \
+--privileged=true \
+mysql
 
 
 
@@ -78,43 +97,49 @@ collation-server = utf8mb4_unicode_ci
 sudo docker run -itd -p 3307:3306 \
 --name=mysql_cluster_master3307 \
 -v /home/mysql/cluster3307/data:/var/lib/mysql \
+-v /home/mysql/cluster3307/conf:/etc/mysql/conf.d \
+-v /home/mysql/cluster3307/log:/var/log/mysql \
 -e MYSQL_ROOT_PASSWORD=ban \
 --privileged=true \
 mysql
 
+show master status;
 
 
 sudo docker run -itd -p 3307:3306 \
 --name=mysql_cluster_slave3307 \
 -v /home/mysql/cluster3307/data:/var/lib/mysql \
+-v /home/mysql/cluster3307/conf:/etc/mysql/conf.d \
+-v /home/mysql/cluster3307/log:/var/log/mysql \
 -e MYSQL_ROOT_PASSWORD=ban \
 --privileged=true \
 mysql
-
-
 
 CHANGE MASTER TO master_host = '192.168.137.21',
 master_port = 3307,
 master_user = 'root',
 master_password = 'ban',
-master_log_file = 'mysql-bin.000001',
-master_log_pos = 721;
+master_log_file = 'mysql-bin.000004',
+master_log_pos = 156;
 
+start slave;
+show slave status;
 
 
 
 
 ----------------------- nacos standalone -----------------------
 ###https://nacos.io/zh-cn/docs/quick-start-docker.html
+###https://github.com/alibaba/nacos/blob/master/distribution/conf/nacos-mysql.sql
 
 sudo docker run -itd -p 8848:8848 \
 --name nacos_standalone8848 \
 --env MODE=standalone \
---env NACOS_SERVER_IP=172.18.144.128 \
+--env NACOS_SERVER_IP=192.168.137.21 \
 --env NACOS_APPLICATION_PORT=8848 \
 --env SPRING_DATASOURCE_PLATFORM=mysql \
 --env MYSQL_DATABASE_NUM=1 \
---env MYSQL_SERVICE_HOST=172.18.144.128 \
+--env MYSQL_SERVICE_HOST=192.168.137.21 \
 --env MYSQL_SERVICE_PORT=3306 \
 --env MYSQL_SERVICE_DB_NAME=nacos \
 --env MYSQL_SERVICE_USER=root \
