@@ -1,0 +1,21 @@
+server:
+  port: 9550
+spring:
+  application:
+    name: cloud-web
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 172.18.144.128:8849
+        namespace: dc26b616-6347-471e-8b59-3f5d67ed041a
+dubbo:
+  application:
+    name: ${spring.application.name}
+    register-consumer: true
+  protocol:
+    name: dubbo
+    port: -1
+  registry:
+    address: nacos://172.18.144.128:8849
+  cloud:
+    subscribed-services: service-user
