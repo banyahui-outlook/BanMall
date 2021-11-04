@@ -70,7 +70,9 @@ max_connections = 200
 log-bin = mysql-bin  
 server-id = 1
 binlog_format = MIXED
-expire_logs_days = 30  
+expire_logs_days = 30
+#从库只读
+#read_only = 1
 
 
 sudo docker run -itd -p 3306:3306 \
@@ -87,7 +89,6 @@ sudo docker run -itd -p 3306:3306 \
 -e MYSQL_ROOT_PASSWORD=ban \
 --privileged=true \
 mysql
-
 
 
 ------------ mysql cluster ------------
@@ -131,6 +132,10 @@ set global sql_slave_skip_counter=1;
 start slave;
 
 
+------------ mysql hot standby ------------
+###https://www.cnblogs.com/jianmingyuan/p/10903682.html
+
+
 
 
 ----------------------- nacos standalone -----------------------
@@ -159,13 +164,41 @@ sudo docker run -itd -p 8848:8848 \
 nacos/nacos-server
 
 
+sudo docker run -itd -p 8848:8848 \
+--name nacos_standalone8848 \
+--env MODE=standalone \
+--env NACOS_SERVER_IP=192.168.137.21 \
+--env NACOS_APPLICATION_PORT=8848 \
+--env SPRING_DATASOURCE_PLATFORM=mysql \
+--env MYSQL_DATABASE_NUM=2 \
+--env MYSQL_SERVICE_HOST=192.168.137.21 \
+--env MYSQL_SERVICE_PORT=3307 \
+--env MYSQL_SERVICE_DB_NAME=nacos \
+--env MYSQL_SERVICE_USER=root \
+--env MYSQL_SERVICE_PASSWORD=ban \
+--env MYSQL_SLAVE_SERVICE_HOST=192.168.137.22 \
+--env MYSQL_SLAVE_SERVICE_PORT=3307 \
+--env JVM_XMS=640m \
+--env JVM_XMX=640m \
+--env JVM_XMN=256m \
+--env JVM_MS=128m \
+--env JVM_MMS=256m \
+--privileged=true \
+nacos/nacos-server
 
------------- nacos cluster ------------
+%%%%%%%Nacos BUG%%%%%%%%%
+vi application.properties
+add MYSQL_SLAVE_SERVICE_HOST & MYSQL_SLAVE_SERVICE_PORT
+
+
+------------ nacos cluster mysql standalone ------------
 ###https://registry.hub.docker.com/_/nginx
 ###https://www.runoob.com/docker/docker-install-nginx.html
 ###https://nacos.io/zh-cn/docs/quick-start-docker.html
 ###https://www.cnblogs.com/yscec/p/13670568.html
 ###https://blog.csdn.net/weixin_44790046/article/details/106857369
+###https://blog.csdn.net/xu990128638/article/details/119492529
+###https://blog.csdn.net/qq_39099625/article/details/118610964
 
 sudo docker run -itd -p 8849:80 \
 --name nginx8849 \
@@ -212,18 +245,98 @@ http {
 }
 
 
-sudo docker run -itd -p 8850:8848 \
+sudo docker run -itd -p 8848:8848 \
+-p 7848:7848 \
+-p 9848:9848 \
+-p 9849:9849 \
 --name nacos_cluster21 \
+--env MODE=cluster \
+--env NACOS_SERVER_IP=192.168.137.21 \
+--env NACOS_APPLICATION_PORT=8848 \
+--env NACOS_SERVERS=192.168.137.21:8848,192.168.137.22:8848 \
+--env SPRING_DATASOURCE_PLATFORM=mysql \
+--env MYSQL_DATABASE_NUM=1 \
+--env MYSQL_SERVICE_HOST=192.168.137.21 \
+--env MYSQL_SERVICE_PORT=3306 \
+--env MYSQL_SERVICE_DB_NAME=nacos \
+--env MYSQL_SERVICE_USER=root \
+--env MYSQL_SERVICE_PASSWORD=ban \
+--env JVM_XMS=640m \
+--env JVM_XMX=640m \
+--env JVM_XMN=256m \
+--env JVM_MS=128m \
+--env JVM_MMS=256m \
+--privileged=true \
+nacos/nacos-server
+
+sudo docker run -itd -p 8848:8848 \
+-p 7848:7848 \
+-p 9848:9848 \
+-p 9849:9849 \
+--name nacos_cluster22 \
+--env MODE=cluster \
+--env NACOS_SERVER_IP=192.168.137.22 \
+--env NACOS_APPLICATION_PORT=8848 \
+--env NACOS_SERVERS=192.168.137.21:8848,192.168.137.22:8848 \
+--env SPRING_DATASOURCE_PLATFORM=mysql \
+--env MYSQL_DATABASE_NUM=1 \
+--env MYSQL_SERVICE_HOST=192.168.137.21 \
+--env MYSQL_SERVICE_PORT=3306 \
+--env MYSQL_SERVICE_DB_NAME=nacos \
+--env MYSQL_SERVICE_USER=root \
+--env MYSQL_SERVICE_PASSWORD=ban \
+--env JVM_XMS=640m \
+--env JVM_XMX=640m \
+--env JVM_XMN=256m \
+--env JVM_MS=128m \
+--env JVM_MMS=256m \
+--privileged=true \
+nacos/nacos-server
+
+sudo docker run -itd -p 8850:8850 \
+-p 8851:7848 \
+-p 8852:9848 \
+-p 8853:9849 \
+--name nacos_cluster23 \
+--env MODE=cluster \
+--env NACOS_SERVER_IP=192.168.137.23 \
+--env NACOS_APPLICATION_PORT=8850 \
+--env NACOS_SERVERS=192.168.137.21:8850,192.168.137.22:8850 \
+--env SPRING_DATASOURCE_PLATFORM=mysql \
+--env MYSQL_DATABASE_NUM=1 \
+--env MYSQL_SERVICE_HOST=192.168.137.21 \
+--env MYSQL_SERVICE_PORT=3306 \
+--env MYSQL_SERVICE_DB_NAME=nacos \
+--env MYSQL_SERVICE_USER=root \
+--env MYSQL_SERVICE_PASSWORD=ban \
+--env JVM_XMS=640m \
+--env JVM_XMX=640m \
+--env JVM_XMN=256m \
+--env JVM_MS=128m \
+--env JVM_MMS=256m \
+--privileged=true \
+nacos/nacos-server
+
+ 
+------------ nacos cluster mysql cluster ------------
+### vi nacos application.properties
+
+sudo docker run -itd -p 8850:8848 \
+-p 9850:9848 \
+-p 9851:9849 \
+--name nacos_mysql_cluster21 \
 --env MODE=cluster \
 --env NACOS_SERVER_IP=192.168.137.21 \
 --env NACOS_SERVERS=192.168.137.21:8850,192.168.137.22:8850,192.168.137.23:8850 \
 --env SPRING_DATASOURCE_PLATFORM=mysql \
---env MYSQL_DATABASE_NUM=1 \
+--env MYSQL_DATABASE_NUM=2 \
 --env MYSQL_SERVICE_HOST=192.168.137.21 \
---env MYSQL_SERVICE_PORT=3306 \
+--env MYSQL_SERVICE_PORT=3307 \
 --env MYSQL_SERVICE_DB_NAME=nacos \
 --env MYSQL_SERVICE_USER=root \
 --env MYSQL_SERVICE_PASSWORD=ban \
+--env MYSQL_SLAVE_SERVICE_HOST=192.168.137.22 \
+--env MYSQL_SLAVE_SERVICE_PORT=3307 \
 --env JVM_XMS=640m \
 --env JVM_XMX=640m \
 --env JVM_XMN=256m \
@@ -233,17 +346,19 @@ sudo docker run -itd -p 8850:8848 \
 nacos/nacos-server
 
 sudo docker run -itd -p 8850:8848 \
---name nacos_cluster22 \
+--name nacos_mysql_cluster22 \
 --env MODE=cluster \
 --env NACOS_SERVER_IP=192.168.137.22 \
 --env NACOS_SERVERS=192.168.137.21:8850,192.168.137.22:8850,192.168.137.23:8850 \
 --env SPRING_DATASOURCE_PLATFORM=mysql \
---env MYSQL_DATABASE_NUM=1 \
+--env MYSQL_DATABASE_NUM=2 \
 --env MYSQL_SERVICE_HOST=192.168.137.21 \
---env MYSQL_SERVICE_PORT=3306 \
+--env MYSQL_SERVICE_PORT=3307 \
 --env MYSQL_SERVICE_DB_NAME=nacos \
 --env MYSQL_SERVICE_USER=root \
 --env MYSQL_SERVICE_PASSWORD=ban \
+--env MYSQL_SLAVE_SERVICE_HOST=192.168.137.22 \
+--env MYSQL_SLAVE_SERVICE_PORT=3307 \
 --env JVM_XMS=640m \
 --env JVM_XMX=640m \
 --env JVM_XMN=256m \
@@ -253,17 +368,19 @@ sudo docker run -itd -p 8850:8848 \
 nacos/nacos-server
 
 sudo docker run -itd -p 8850:8848 \
---name nacos_cluster23 \
+--name nacos_mysql_cluster23 \
 --env MODE=cluster \
 --env NACOS_SERVER_IP=192.168.137.23 \
 --env NACOS_SERVERS=192.168.137.21:8850,192.168.137.22:8850,192.168.137.23:8850 \
 --env SPRING_DATASOURCE_PLATFORM=mysql \
---env MYSQL_DATABASE_NUM=1 \
+--env MYSQL_DATABASE_NUM=2 \
 --env MYSQL_SERVICE_HOST=192.168.137.21 \
---env MYSQL_SERVICE_PORT=3306 \
+--env MYSQL_SERVICE_PORT=3307 \
 --env MYSQL_SERVICE_DB_NAME=nacos \
 --env MYSQL_SERVICE_USER=root \
 --env MYSQL_SERVICE_PASSWORD=ban \
+--env MYSQL_SLAVE_SERVICE_HOST=192.168.137.22 \
+--env MYSQL_SLAVE_SERVICE_PORT=3307 \
 --env JVM_XMS=640m \
 --env JVM_XMX=640m \
 --env JVM_XMN=256m \
@@ -272,7 +389,6 @@ sudo docker run -itd -p 8850:8848 \
 --privileged=true \
 nacos/nacos-server 
 
- 
 
 
 
@@ -292,20 +408,18 @@ nacos/nacos-server
 
 
 
-sudo docker run -itd --name=mysql -v /home/mysql/config/my.cnf:/etc/mysql/my.cnf -v /home/mysql/data:/usr/mysql/data -v /home/mysql/logs:/var/log/mysql -p 3306:3306 -e MYSQL_ROOT_PASSWORD=ban --privileged=true mysql
 
 
 
-docker run -d --name nacos-cluster -p 8848:8848 \
-  --env NACOS_SERVERS=192.168.56.102,192.168.56.104,192.168.56.105 \
-  --env NACOS_SERVER_IP=192.168.56.102 \
-  --env SPRING_DATASOURCE_PLATFORM=mysql \
-  --env MYSQL_SERVICE_HOST=192.168.56.103 \
-  --env MYSQL_SERVICE_DB_NAME=nacos \
-  --env MYSQL_SERVICE_USER=root \
-  --env MYSQL_SERVICE_PASSWORD=123456 \
-  --env MYSQL_DATABASE_NUM=1 \
-  nacos/nacos-server
+
+
+
+
+
+
+
+
+
 
 
 
