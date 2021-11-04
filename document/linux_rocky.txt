@@ -93,6 +93,7 @@ mysql
 ------------ mysql cluster ------------
 ###https://www.cnblogs.com/dw3306/p/13943008.html
 ###https://www.cnblogs.com/bdicaprio/articles/9877525.html
+###https://blog.51cto.com/phpervip/2064296
 
 sudo docker run -itd -p 3307:3306 \
 --name=mysql_cluster_master3307 \
@@ -125,10 +126,15 @@ master_log_pos = 156;
 start slave;
 show slave status;
 
+stop slave;
+set global sql_slave_skip_counter=1;
+start slave;
+
 
 
 
 ----------------------- nacos standalone -----------------------
+###https://registry.hub.docker.com/r/nacos/nacos-server
 ###https://nacos.io/zh-cn/docs/quick-start-docker.html
 ###https://github.com/alibaba/nacos/blob/master/distribution/conf/nacos-mysql.sql
 
@@ -155,37 +161,65 @@ nacos/nacos-server
 
 
 ------------ nacos cluster ------------
+###https://registry.hub.docker.com/_/nginx
 ###https://www.runoob.com/docker/docker-install-nginx.html
 ###https://nacos.io/zh-cn/docs/quick-start-docker.html
 ###https://www.cnblogs.com/yscec/p/13670568.html
 ###https://blog.csdn.net/weixin_44790046/article/details/106857369
 
 sudo docker run -itd -p 8849:80 \
---name nginx \
+--name nginx8849 \
 nginx
---- config---
-upstream nacos {
-	server 172.18.144.128:8850 weight=3;
-	server 172.18.144.128:8851 weight=2;
-	server 172.18.144.128:8852 weight=1;
+
+sudo docker run -itd -p 8849:80 \
+-v /home/nginx/html:/usr/share/nginx/html \
+-v /home/nginx/conf/nginx.conf:/etc/nginx/nginx.conf \
+-v /home/nginx/log:/var/log/nginx \
+--name nginx8849 \
+nginx
+
+%%%%%%%%%nginx.conf%%%%%%%%%
+#工作进程数 1,不要超过计算机的核数,四核配置4,八核配置8
+worker_processes  1;
+#工作连接数,也就是线程,一个进程有1024个线程,
+events {
+    worker_connections  1024;
+}
+#http请求配置
+http {
+    default_type  application/octet-stream;
+    #sendfile为发送文件,要on开启
+    sendfile        on;
+    #keepalive_timeout超时时间
+    keepalive_timeout  60;
+
+    upstream nacos {
+        server 192.168.137.21:8850 weight=1;
+        server 192.168.137.22:8850 weight=2;
+        server 192.168.137.23:8850 weight=3;
+    }
+    server {
+        #监听的端口,这里为80
+        listen       80;
+        #server_name就是域名,
+        #server_name  localhost;
+		
+        #location域名代理地址 / 代表所有请求路径
+        location / {
+            proxy_pass http://nacos;
+        }
+    }
 }
 
-server {
-	listen 80;
-	location / {
-		proxy_pass http://nacos;
-	}
-}
 
-sudo docker run -itd -p 8850:8850 \
---name nacos_cl_8850 \
+sudo docker run -itd -p 8850:8848 \
+--name nacos_cluster21 \
 --env MODE=cluster \
---env NACOS_SERVER_IP=172.18.144.128 \
---env NACOS_APPLICATION_PORT=8850 \
---env NACOS_SERVERS=172.18.144.128:8850,172.18.144.128:8851,172.18.144.128:8852 \
+--env NACOS_SERVER_IP=192.168.137.21 \
+--env NACOS_SERVERS=192.168.137.21:8850,192.168.137.22:8850,192.168.137.23:8850 \
 --env SPRING_DATASOURCE_PLATFORM=mysql \
 --env MYSQL_DATABASE_NUM=1 \
---env MYSQL_SERVICE_HOST=172.18.144.128 \
+--env MYSQL_SERVICE_HOST=192.168.137.21 \
 --env MYSQL_SERVICE_PORT=3306 \
 --env MYSQL_SERVICE_DB_NAME=nacos \
 --env MYSQL_SERVICE_USER=root \
@@ -198,15 +232,14 @@ sudo docker run -itd -p 8850:8850 \
 --privileged=true \
 nacos/nacos-server
 
-sudo docker run -itd -p 8851:8851 \
---name nacos_cl_8851 \
+sudo docker run -itd -p 8850:8848 \
+--name nacos_cluster22 \
 --env MODE=cluster \
---env NACOS_SERVER_IP=172.18.144.128 \
---env NACOS_APPLICATION_PORT=8851 \
---env NACOS_SERVERS=172.18.144.128:8850,172.18.144.128:8851,172.18.144.128:8852 \
+--env NACOS_SERVER_IP=192.168.137.22 \
+--env NACOS_SERVERS=192.168.137.21:8850,192.168.137.22:8850,192.168.137.23:8850 \
 --env SPRING_DATASOURCE_PLATFORM=mysql \
 --env MYSQL_DATABASE_NUM=1 \
---env MYSQL_SERVICE_HOST=172.18.144.128 \
+--env MYSQL_SERVICE_HOST=192.168.137.21 \
 --env MYSQL_SERVICE_PORT=3306 \
 --env MYSQL_SERVICE_DB_NAME=nacos \
 --env MYSQL_SERVICE_USER=root \
@@ -219,15 +252,14 @@ sudo docker run -itd -p 8851:8851 \
 --privileged=true \
 nacos/nacos-server
 
-sudo docker run -itd -p 8852:8852 \
---name nacos_cl_8852 \
+sudo docker run -itd -p 8850:8848 \
+--name nacos_cluster23 \
 --env MODE=cluster \
---env NACOS_SERVER_IP=172.18.144.128 \
---env NACOS_APPLICATION_PORT=8852 \
---env NACOS_SERVERS=172.18.144.128:8850,172.18.144.128:8851,172.18.144.128:8852 \
+--env NACOS_SERVER_IP=192.168.137.23 \
+--env NACOS_SERVERS=192.168.137.21:8850,192.168.137.22:8850,192.168.137.23:8850 \
 --env SPRING_DATASOURCE_PLATFORM=mysql \
 --env MYSQL_DATABASE_NUM=1 \
---env MYSQL_SERVICE_HOST=172.18.144.128 \
+--env MYSQL_SERVICE_HOST=192.168.137.21 \
 --env MYSQL_SERVICE_PORT=3306 \
 --env MYSQL_SERVICE_DB_NAME=nacos \
 --env MYSQL_SERVICE_USER=root \
@@ -238,7 +270,7 @@ sudo docker run -itd -p 8852:8852 \
 --env JVM_MS=128m \
 --env JVM_MMS=256m \
 --privileged=true \
-nacos/nacos-server
+nacos/nacos-server 
 
  
 
