@@ -5,6 +5,13 @@ https://blog.csdn.net/rai369963/article/details/83450947
 
 
 
+----------------------- git -----------------------
+###https://blog.csdn.net/qq_33912215/article/details/89000254
+
+
+
+
+
 
 ----------------------- docker -----------------------
 ###https://docs.docker.com/engine/install/centos/
@@ -36,6 +43,13 @@ vi /etc/docker/daemon.json
 }
 
 
+-v /your_directory/mysql/data:/var/lib/mysql	挂载数据库数据
+-e MYSQL_ROOT_PASSWORD=your_password	数据库root用户的密码
+mysql                                            		镜像名
+--name your_db_name			定义的容器名
+-d					后台运行容器
+
+
 
 
 
@@ -47,14 +61,6 @@ vi /etc/docker/daemon.json
 ###https://www.cnblogs.com/clement-jiao/articles/9032193.html
 ###https://www.cnblogs.com/hu308830232/p/15211720.html
 ###https://www.freebytes.net/it/java/dokcer-mysql-binlog.html
-
--v /your_directory/mysql/data:/var/lib/mysql	挂载数据库数据
--v /your_directory/mysql/conf:/etc/mysql/conf.d	挂载配置文件
--v /your_directory /mysql/log:/var/log/mysql	挂载数据库日志
--e MYSQL_ROOT_PASSWORD=your_password	数据库root用户的密码
-mysql                                            		镜像名
---name your_db_name			定义的容器名
--d					后台运行容器
 
 %%%%%%%%%my.cnf%%%%%%%%%
 [client]
@@ -71,18 +77,11 @@ log-bin = mysql-bin
 server-id = 1
 binlog_format = MIXED
 expire_logs_days = 30
-#从库只读
+#从库只读 https://www.cnblogs.com/sandea/p/9467176.html
 #read_only = 1
 
-
 sudo docker run -itd -p 3306:3306 \
---name=mysql_standalone3306 \
--e MYSQL_ROOT_PASSWORD=ban \
---privileged=true \
-mysql
-
-sudo docker run -itd -p 3306:3306 \
---name=mysql_standalone3306 \
+--name=mysql_standalone_21_3306 \
 -v /home/mysql/standalone3306/data:/var/lib/mysql \
 -v /home/mysql/standalone3306/conf:/etc/mysql/conf.d \
 -v /home/mysql/standalone3306/log:/var/log/mysql \
@@ -91,13 +90,15 @@ sudo docker run -itd -p 3306:3306 \
 mysql
 
 
+
 ------------ mysql cluster ------------
 ###https://www.cnblogs.com/dw3306/p/13943008.html
 ###https://www.cnblogs.com/bdicaprio/articles/9877525.html
 ###https://blog.51cto.com/phpervip/2064296
 
+%%%%%%%%%---192.168.137.21---%%%%%%%%%
 sudo docker run -itd -p 3307:3306 \
---name=mysql_cluster_master3307 \
+--name=mysql_cluster_master_21_3307 \
 -v /home/mysql/cluster3307/data:/var/lib/mysql \
 -v /home/mysql/cluster3307/conf:/etc/mysql/conf.d \
 -v /home/mysql/cluster3307/log:/var/log/mysql \
@@ -105,17 +106,20 @@ sudo docker run -itd -p 3307:3306 \
 --privileged=true \
 mysql
 
+
+%%%%%%%%%---192.168.137.22---%%%%%%%%%
+sudo docker run -itd -p 3307:3306 \
+--name=mysql_cluster_slave_22_3307 \
+-v /home/mysql/cluster3307/data:/var/lib/mysql \
+-v /home/mysql/cluster3307/conf:/etc/mysql/conf.d \
+-v /home/mysql/cluster3307/log:/var/log/mysql \
+-e MYSQL_ROOT_PASSWORD=ban \
+--privileged=true \
+mysql
+
+
+%%%%%%%%%------exec sql------%%%%%%%%%
 show master status;
-
-
-sudo docker run -itd -p 3307:3306 \
---name=mysql_cluster_slave3307 \
--v /home/mysql/cluster3307/data:/var/lib/mysql \
--v /home/mysql/cluster3307/conf:/etc/mysql/conf.d \
--v /home/mysql/cluster3307/log:/var/log/mysql \
--e MYSQL_ROOT_PASSWORD=ban \
---privileged=true \
-mysql
 
 CHANGE MASTER TO master_host = '192.168.137.21',
 master_port = 3307,
@@ -124,27 +128,137 @@ master_password = 'ban',
 master_log_file = 'mysql-bin.000004',
 master_log_pos = 156;
 
-start slave;
 show slave status;
+select * from performance_schema.replication_applier_status_by_worker;
 
 stop slave;
+reset slave all;
 set global sql_slave_skip_counter=1;
 start slave;
+
 
 
 ------------ mysql hot standby ------------
 ###https://www.cnblogs.com/jianmingyuan/p/10903682.html
 
+%%%%%%%%%my.cnf%%%%%%%%%
+[client]
+default-character-set = utf8mb4
+[mysql]
+default-character-set = utf8mb4
+[mysqld]
+character-set-server = utf8mb4
+collation-server = utf8mb4_unicode_ci
+back_log = 512
+key_buffer_size = 64M
+max_connections = 200
+log-bin = mysql-bin  
+server-id = 21
+binlog_format = MIXED
+expire_logs_days = 30
+#主-主配置
+binlog-do-db = nacos
+binlog-ignore-db = mysql
+log-slave-updates
+sync_binlog = 1
+auto_increment_offset = 1
+auto_increment_increment = 2
+replicate-do-db = nacos
+replicate-ignore-db = mysql,information_schema
+
+%%%%%%%%%---192.168.137.21---%%%%%%%%%
+sudo docker run -itd -p 3308:3306 \
+--name=mysql_double_master_21_3308 \
+-v /home/mysql/double_master3308/data:/var/lib/mysql \
+-v /home/mysql/double_master3308/conf:/etc/mysql/conf.d \
+-v /home/mysql/double_master3308/log:/var/log/mysql \
+-e MYSQL_ROOT_PASSWORD=ban \
+--privileged=true \
+mysql
+
+%%%%%%%%%---192.168.137.22---%%%%%%%%%
+sudo docker run -itd -p 3308:3306 \
+--name=mysql_double_master_22_3308 \
+-v /home/mysql/double_master3308/data:/var/lib/mysql \
+-v /home/mysql/double_master3308/conf:/etc/mysql/conf.d \
+-v /home/mysql/double_master3308/log:/var/log/mysql \
+-e MYSQL_ROOT_PASSWORD=ban \
+--privileged=true \
+mysql
+
+%%%%%%%%%------exec sql------%%%%%%%%%
+show master status;
+
+change master to
+master_host='192.168.137.21', master_port=3308, master_user='root', master_password='ban',
+master_log_file='mysql-bin.000003', master_log_pos=693;
+
+start slave;
+show slave status;
+select * from performance_schema.replication_applier_status_by_worker;
+stop slave;
+reset slave all;
 
 
 
------------------------ nacos standalone -----------------------
+
+
+
+----------------------- nginx ----------------------- 
+###https://registry.hub.docker.com/_/nginx
+###https://www.runoob.com/docker/docker-install-nginx.html
+
+sudo docker run -itd -p 8849:80 \
+-v /home/nginx/html:/usr/share/nginx/html \
+-v /home/nginx/conf/nginx.conf:/etc/nginx/nginx.conf \
+-v /home/nginx/log:/var/log/nginx \
+--name nginx_nacos_21_8849 \
+nginx
+
+%%%%%%%%%nginx.conf%%%%%%%%%
+#工作进程数 1,不要超过计算机的核数,四核配置4,八核配置8
+worker_processes  1;
+#工作连接数,也就是线程,一个进程有1024个线程,
+events {
+    worker_connections  1024;
+}
+#http请求配置
+http {
+    default_type  application/octet-stream;
+    #sendfile为发送文件,要on开启
+    sendfile        on;
+    #keepalive_timeout超时时间
+    keepalive_timeout  60;
+
+    upstream nacos {
+        server 192.168.137.21:8848 weight=1;
+        server 192.168.137.22:8848 weight=2;
+        server 192.168.137.23:8848 weight=3;
+    }
+    server {
+        #监听的端口,这里为80
+        listen       80;
+        #server_name就是域名,
+        #server_name  localhost;
+		
+        #location域名代理地址 / 代表所有请求路径
+        location / {
+            proxy_pass http://nacos;
+        }
+    }
+}
+
+
+
+
+
+----------------------- nacos standalone mysql standalone -----------------------
 ###https://registry.hub.docker.com/r/nacos/nacos-server
 ###https://nacos.io/zh-cn/docs/quick-start-docker.html
 ###https://github.com/alibaba/nacos/blob/master/distribution/conf/nacos-mysql.sql
 
 sudo docker run -itd -p 8848:8848 \
---name nacos_standalone8848 \
+--name nacos_mysql_standalone_21_8848 \
 --env MODE=standalone \
 --env NACOS_SERVER_IP=192.168.137.21 \
 --env NACOS_APPLICATION_PORT=8848 \
@@ -164,8 +278,10 @@ sudo docker run -itd -p 8848:8848 \
 nacos/nacos-server
 
 
+
+----------------------- nacos standalone mysql cluster -----------------------
 sudo docker run -itd -p 8848:8848 \
---name nacos_standalone8848 \
+--name nacos_standalone_mysql_cluster_21_8848 \
 --env MODE=standalone \
 --env NACOS_SERVER_IP=192.168.137.21 \
 --env NACOS_APPLICATION_PORT=8848 \
@@ -191,69 +307,24 @@ vi application.properties
 add MYSQL_SLAVE_SERVICE_HOST & MYSQL_SLAVE_SERVICE_PORT
 
 
------------- nacos cluster mysql standalone ------------
-###https://registry.hub.docker.com/_/nginx
-###https://www.runoob.com/docker/docker-install-nginx.html
+
+----------------------- nacos cluster mysql standalone -----------------------
 ###https://nacos.io/zh-cn/docs/quick-start-docker.html
 ###https://www.cnblogs.com/yscec/p/13670568.html
 ###https://blog.csdn.net/weixin_44790046/article/details/106857369
 ###https://blog.csdn.net/xu990128638/article/details/119492529
 ###https://blog.csdn.net/qq_39099625/article/details/118610964
 
-sudo docker run -itd -p 8849:80 \
---name nginx8849 \
-nginx
-
-sudo docker run -itd -p 8849:80 \
--v /home/nginx/html:/usr/share/nginx/html \
--v /home/nginx/conf/nginx.conf:/etc/nginx/nginx.conf \
--v /home/nginx/log:/var/log/nginx \
---name nginx8849 \
-nginx
-
-%%%%%%%%%nginx.conf%%%%%%%%%
-#工作进程数 1,不要超过计算机的核数,四核配置4,八核配置8
-worker_processes  1;
-#工作连接数,也就是线程,一个进程有1024个线程,
-events {
-    worker_connections  1024;
-}
-#http请求配置
-http {
-    default_type  application/octet-stream;
-    #sendfile为发送文件,要on开启
-    sendfile        on;
-    #keepalive_timeout超时时间
-    keepalive_timeout  60;
-
-    upstream nacos {
-        server 192.168.137.21:8850 weight=1;
-        server 192.168.137.22:8850 weight=2;
-        server 192.168.137.23:8850 weight=3;
-    }
-    server {
-        #监听的端口,这里为80
-        listen       80;
-        #server_name就是域名,
-        #server_name  localhost;
-		
-        #location域名代理地址 / 代表所有请求路径
-        location / {
-            proxy_pass http://nacos;
-        }
-    }
-}
-
-
+%%%%%%%%%192.168.137.21%%%%%%%%%
 sudo docker run -itd -p 8848:8848 \
 -p 7848:7848 \
 -p 9848:9848 \
 -p 9849:9849 \
---name nacos_cluster21 \
+--name nacos_cluster_mysql_standalone_21_8848 \
 --env MODE=cluster \
 --env NACOS_SERVER_IP=192.168.137.21 \
 --env NACOS_APPLICATION_PORT=8848 \
---env NACOS_SERVERS=192.168.137.21:8848,192.168.137.22:8848 \
+--env NACOS_SERVERS=192.168.137.21:8848,192.168.137.22:8848,192.168.137.23:8848 \
 --env SPRING_DATASOURCE_PLATFORM=mysql \
 --env MYSQL_DATABASE_NUM=1 \
 --env MYSQL_SERVICE_HOST=192.168.137.21 \
@@ -269,15 +340,16 @@ sudo docker run -itd -p 8848:8848 \
 --privileged=true \
 nacos/nacos-server
 
+%%%%%%%%%192.168.137.22%%%%%%%%%
 sudo docker run -itd -p 8848:8848 \
 -p 7848:7848 \
 -p 9848:9848 \
 -p 9849:9849 \
---name nacos_cluster22 \
+--name nacos_cluster_mysql_standalone_22_8848 \
 --env MODE=cluster \
 --env NACOS_SERVER_IP=192.168.137.22 \
 --env NACOS_APPLICATION_PORT=8848 \
---env NACOS_SERVERS=192.168.137.21:8848,192.168.137.22:8848 \
+--env NACOS_SERVERS=192.168.137.21:8848,192.168.137.22:8848,192.168.137.23:8848 \
 --env SPRING_DATASOURCE_PLATFORM=mysql \
 --env MYSQL_DATABASE_NUM=1 \
 --env MYSQL_SERVICE_HOST=192.168.137.21 \
@@ -293,15 +365,16 @@ sudo docker run -itd -p 8848:8848 \
 --privileged=true \
 nacos/nacos-server
 
-sudo docker run -itd -p 8850:8850 \
--p 8851:7848 \
--p 8852:9848 \
--p 8853:9849 \
---name nacos_cluster23 \
+%%%%%%%%%192.168.137.23%%%%%%%%%
+sudo docker run -itd -p 8848:8848 \
+-p 7848:7848 \
+-p 9848:9848 \
+-p 9849:9849 \
+--name nacos_cluster_mysql_standalone_23_8848 \
 --env MODE=cluster \
 --env NACOS_SERVER_IP=192.168.137.23 \
---env NACOS_APPLICATION_PORT=8850 \
---env NACOS_SERVERS=192.168.137.21:8850,192.168.137.22:8850 \
+--env NACOS_APPLICATION_PORT=8848 \
+--env NACOS_SERVERS=192.168.137.21:8848,192.168.137.22:8848,192.168.137.23:8848 \
 --env SPRING_DATASOURCE_PLATFORM=mysql \
 --env MYSQL_DATABASE_NUM=1 \
 --env MYSQL_SERVICE_HOST=192.168.137.21 \
@@ -316,18 +389,22 @@ sudo docker run -itd -p 8850:8850 \
 --env JVM_MMS=256m \
 --privileged=true \
 nacos/nacos-server
+
 
  
------------- nacos cluster mysql cluster ------------
+----------------------- nacos cluster mysql cluster -----------------------
 ### vi nacos application.properties
 
-sudo docker run -itd -p 8850:8848 \
--p 9850:9848 \
--p 9851:9849 \
---name nacos_mysql_cluster21 \
+%%%%%%%%%192.168.137.21%%%%%%%%%
+sudo docker run -itd -p 8848:8848 \
+-p 7848:7848 \
+-p 9848:9848 \
+-p 9849:9849 \
+--name nacos_mysql_cluster_21_8848 \
 --env MODE=cluster \
 --env NACOS_SERVER_IP=192.168.137.21 \
---env NACOS_SERVERS=192.168.137.21:8850,192.168.137.22:8850,192.168.137.23:8850 \
+--env NACOS_APPLICATION_PORT=8848 \
+--env NACOS_SERVERS=192.168.137.21:8848,192.168.137.22:8848,192.168.137.23:8848 \
 --env SPRING_DATASOURCE_PLATFORM=mysql \
 --env MYSQL_DATABASE_NUM=2 \
 --env MYSQL_SERVICE_HOST=192.168.137.21 \
@@ -345,11 +422,16 @@ sudo docker run -itd -p 8850:8848 \
 --privileged=true \
 nacos/nacos-server
 
-sudo docker run -itd -p 8850:8848 \
---name nacos_mysql_cluster22 \
+%%%%%%%%%192.168.137.22%%%%%%%%%
+sudo docker run -itd -p 8848:8848 \
+-p 7848:7848 \
+-p 9848:9848 \
+-p 9849:9849 \
+--name nacos_mysql_cluster_22_8848 \
 --env MODE=cluster \
 --env NACOS_SERVER_IP=192.168.137.22 \
---env NACOS_SERVERS=192.168.137.21:8850,192.168.137.22:8850,192.168.137.23:8850 \
+--env NACOS_APPLICATION_PORT=8848 \
+--env NACOS_SERVERS=192.168.137.21:8848,192.168.137.22:8848,192.168.137.23:8848 \
 --env SPRING_DATASOURCE_PLATFORM=mysql \
 --env MYSQL_DATABASE_NUM=2 \
 --env MYSQL_SERVICE_HOST=192.168.137.21 \
@@ -367,11 +449,16 @@ sudo docker run -itd -p 8850:8848 \
 --privileged=true \
 nacos/nacos-server
 
-sudo docker run -itd -p 8850:8848 \
---name nacos_mysql_cluster23 \
+%%%%%%%%%192.168.137.23%%%%%%%%%
+sudo docker run -itd -p 8848:8848 \
+-p 7848:7848 \
+-p 9848:9848 \
+-p 9849:9849 \
+--name nacos_mysql_cluster_23_8848 \
 --env MODE=cluster \
 --env NACOS_SERVER_IP=192.168.137.23 \
---env NACOS_SERVERS=192.168.137.21:8850,192.168.137.22:8850,192.168.137.23:8850 \
+--env NACOS_APPLICATION_PORT=8848 \
+--env NACOS_SERVERS=192.168.137.21:8848,192.168.137.22:8848,192.168.137.23:8848 \
 --env SPRING_DATASOURCE_PLATFORM=mysql \
 --env MYSQL_DATABASE_NUM=2 \
 --env MYSQL_SERVICE_HOST=192.168.137.21 \
@@ -387,7 +474,7 @@ sudo docker run -itd -p 8850:8848 \
 --env JVM_MS=128m \
 --env JVM_MMS=256m \
 --privileged=true \
-nacos/nacos-server 
+nacos/nacos-server
 
 
 
