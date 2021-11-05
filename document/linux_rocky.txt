@@ -5,8 +5,12 @@ https://blog.csdn.net/rai369963/article/details/83450947
 
 
 
+
+
 ----------------------- git -----------------------
+----Your branch is up-to-date with 'origin/master'
 ###https://blog.csdn.net/qq_33912215/article/details/89000254
+
 
 
 
@@ -106,7 +110,6 @@ sudo docker run -itd -p 3307:3306 \
 --privileged=true \
 mysql
 
-
 %%%%%%%%%---192.168.137.22---%%%%%%%%%
 sudo docker run -itd -p 3307:3306 \
 --name=mysql_cluster_slave_22_3307 \
@@ -116,7 +119,6 @@ sudo docker run -itd -p 3307:3306 \
 -e MYSQL_ROOT_PASSWORD=ban \
 --privileged=true \
 mysql
-
 
 %%%%%%%%%------exec sql------%%%%%%%%%
 show master status;
@@ -247,6 +249,7 @@ http {
         }
     }
 }
+
 
 
 
