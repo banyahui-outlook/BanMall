@@ -1,6 +1,11 @@
 ---------------------- hyperV -----------------------
 https://blog.csdn.net/rai369963/article/details/83450947
 
+有时候yum下载时速度很慢，可以考虑清除缓存并更新
+yum clean all
+yum makecache
+yum update
+
 
 
 
