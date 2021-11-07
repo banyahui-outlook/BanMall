@@ -15,7 +15,10 @@ nmcli connection reload
 systemctl status keepalived
 systemctl list-unit-files --type=service | grep httpd
 
-
+时间同步
+###https://jingyan.baidu.com/article/3ea51489d16ac752e61bba88.html
+cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime -R
+echo "$(date +%F) $(date +%T)" 
 
 
 
