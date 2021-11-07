@@ -6,6 +6,15 @@ yum clean all
 yum makecache
 yum update
 
+linux8 网络启动
+###https://blog.csdn.net/qq_37960324/article/details/103007035
+nmcli connection up eth0
+nmcli connection down eth0
+nmcli connection reload
+
+systemctl status keepalived
+systemctl list-unit-files --type=service | grep httpd
+
 
 
 
@@ -272,12 +281,26 @@ wget http://www.keepalived.org/software
 cd keepalived-2.2.4
 ./configure --prefix=/home/keepalived/install
 make && make install
+-- test
+cp /home/keepalived/keepalived-2.2.4/keepalived/etc/keepalived/keepalived.conf /home/keepalived/install/sbin
+-- auto start
+###https://www.cnblogs.com/sky-cheng/p/10768318.html
+mkdir /etc/keepalived
+cp /home/keepalived/install/sbin/keepalived /usr/sbin/
+cp /home/keepalived/install/sbin/keepalived.conf /etc/keepalived/
+cp /home/keepalived/install/etc/sysconfig/keepalived /etc/sysconfig/keepalived
+cp /home/keepalived/keepalived-2.2.4/keepalived/etc/init.d/keepalived /etc/init.d/
+chmod +x /etc/init.d/keepalived
+vi /lib/systemd/system/keepalived.service
+chkconfig --add keepalived
+systemctl enable keepalived
+
 
 %%%%%%%%%keepalived.conf%%%%%%%%%%
 ! Configuration File for keepalived
 global_defs {
     #一个没重复的名字即可
-    router_id nacos_nginx21_8849_master
+    router_id nacos_nginx_21_8849
 }
 # 检测nginx是否运行
 # vrrp_script chk_nginx {

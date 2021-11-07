@@ -6,11 +6,11 @@ spring:
   cloud:
     nacos:
       config:
-        server-addr: 192.168.137.21:8849
+        server-addr: 192.168.137.20:8849
         namespace: develop
         file-extension: yml
       discovery:
-        server-addr: 192.168.137.21:8849
+        server-addr: 192.168.137.20:8849
         namespace: develop
 dubbo:
   application:
@@ -21,6 +21,6 @@ dubbo:
     name: dubbo
     port: -1
   registry:
-    address: nacos://192.168.137.21:8849
+    address: nacos://192.168.137.20:8849
   consumer:
     check: false
