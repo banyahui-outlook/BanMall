@@ -288,10 +288,10 @@ make && make install
 cp /home/keepalived/keepalived-2.2.4/keepalived/etc/keepalived/keepalived.conf /home/keepalived/install/sbin
 -- auto start
 ###https://www.cnblogs.com/sky-cheng/p/10768318.html
-mkdir /etc/keepalived
 cp /home/keepalived/install/sbin/keepalived /usr/sbin/
+mkdir /etc/keepalived
 cp /home/keepalived/install/sbin/keepalived.conf /etc/keepalived/
-cp /home/keepalived/install/etc/sysconfig/keepalived /etc/sysconfig/keepalived
+cp /home/keepalived/install/etc/sysconfig/keepalived /etc/sysconfig/
 cp /home/keepalived/keepalived-2.2.4/keepalived/etc/init.d/keepalived /etc/init.d/
 chmod +x /etc/init.d/keepalived
 vi /lib/systemd/system/keepalived.service
@@ -327,7 +327,7 @@ vrrp_instance VI_1 {
     unicast_src_ip 192.168.137.21
     unicast_peer {
         # 其他机器ip
-        1192.168.137.22
+        192.168.137.22
     }
     # 设置nopreempt防止抢占资源
     nopreempt
