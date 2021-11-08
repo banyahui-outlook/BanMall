@@ -297,6 +297,7 @@ chmod +x /etc/init.d/keepalived
 vi /lib/systemd/system/keepalived.service
 chkconfig --add keepalived
 systemctl enable keepalived
+tail -f /var/log/messages
 
 
 %%%%%%%%%keepalived.conf%%%%%%%%%%
