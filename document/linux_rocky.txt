@@ -586,6 +586,8 @@ nacos/nacos-server
 
 ----------------------- sentinel -----------------------
 ###https://www.jianshu.com/p/373eb512ec48
+###https://www.jianshu.com/p/c47dfd25eeee
+###https://www.cnblogs.com/fanshuyao/p/14606396.html
 ###https://www.cnblogs.com/crazymakercircle/p/14285001.html
 
 docker pull bladex/sentinel-dashboard
@@ -595,20 +597,62 @@ sudo docker run -itd -p 8858:8858 \
 --name sentinel_21_8858 \
 bladex/sentinel-dashboard
 
-
 export JAVA_HOME=/home/jdk/jdk-11.0.13
 export PATH=$PATH:$JAVA_HOME/bin:$JAVA_HOME/jre/bin:$PATH
 
+nohup java -Dserver.port=8070 -Dcsp.sentinel.dashboard.server=localhost:8070 -Dproject.name=sentinel-dashboard -jar sentinel-dashboard-1.8.1.jar &
+---Dcsp.sentinel.log.dir=C:\logs\sentinel-dashboard
+
+不注册Sentinel自己
+java -Dserver.port=8070 -Dcsp.sentinel.log.dir=C:\logs\sentinel-dashboard -jar sentinel-dashboard-1.8.1.jar
+
+注册Sentinel自己
+java -Dserver.port=8070 -Dcsp.sentinel.dashboard.server=localhost:8070 -Dproject.name=sentinel-dashboard -Dcsp.sentinel.log.dir=C:\logs\sentinel-dashboard -jar sentinel-dashboard-1.8.1.jar
 
 
-nohup java -Dserver.port=8086 -Dproject.name=sentinel-dashboard -jar sentinel-dashboard-1.8.2.jar &
+###https://blog.csdn.net/yiyihuazi/article/details/110821772
 
-
-
-
-
-
-
+#切换目录
+cd /etc/init.d
+#创建脚本
+vi sentinel
+ 
+#脚本内容
+#!/bin/bash
+#
+# chkconfig: 2345 10 90
+# 
+# description:auto_run
+#程序名
+RUN_NAME="sentinel-dashboard-1.8.0.jar"
+#jar 位置
+JAVA_OPTS=/opt/module/alibaba/sentinel/sentinel-dashboard-1.8.0.jar
+LOG_OPTS=/opt/module/alibaba/sentinel/sentinel_temp.log
+#开始方法
+start() {
+        source /etc/profile; nohup java -Xms256M -Xmx512M -XX:PermSize=128M -XX:MaxPermSize=256M -Dserver.port=9100 -Dcsp.sentinel.dashboard.server=10.139.10.101:9100 -Dproject.name=Sentinel基本控制台 -jar $JAVA_OPTS >$LOG_OPTS 2>&1 &
+        echo "$RUN_NAME started success."
+}
+#结束方法
+stop() {
+        echo "stopping $RUN_NAME ..."
+        kill -9 `ps -ef|grep $JAVA_OPTS|grep -v grep|grep -v stop|awk '{print $2}'`
+}
+case "$1" in
+        start)
+            start
+            ;;
+        stop)
+            stop
+            ;;
+        restart)
+            stop
+            start
+            ;;
+        *)
+   echo "Userage: $0 {start|stop|restart}"
+   exit 1
+esac
 
 
 
