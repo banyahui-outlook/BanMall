@@ -305,6 +305,8 @@ tail -f /var/log/messages
 global_defs {
     #一个没重复的名字即可
     router_id nacos_nginx_21_8849
+    # 多播模式
+    # vrrp_strict
 }
 # 检测nginx是否运行
 # vrrp_script chk_nginx {
@@ -346,7 +348,8 @@ vrrp_instance VI_1 {
         192.168.137.20
     }
 }
-
+---- Unicast peers are not supported in strict mode
+###https://blog.csdn.net/qq_29974229/article/details/120760434
 
 
 
@@ -581,14 +584,24 @@ nacos/nacos-server
 
 
 
+----------------------- sentinel -----------------------
+###https://www.jianshu.com/p/373eb512ec48
+###https://www.cnblogs.com/crazymakercircle/p/14285001.html
+
+docker pull bladex/sentinel-dashboard
+
+sudo docker run -itd -p 8858:8858 \
+-p 8719:8719 \
+--name sentinel_21_8858 \
+bladex/sentinel-dashboard
+
+
+export JAVA_HOME=/home/jdk/jdk-11.0.13
+export PATH=$PATH:$JAVA_HOME/bin:$JAVA_HOME/jre/bin:$PATH
 
 
 
-
-
-
-
-
+nohup java -Dserver.port=8086 -Dproject.name=sentinel-dashboard -jar sentinel-dashboard-1.8.2.jar &
 
 
 

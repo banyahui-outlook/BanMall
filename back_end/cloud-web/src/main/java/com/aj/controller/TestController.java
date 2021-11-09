@@ -17,4 +17,9 @@ public class TestController {
         var result = userService.buy("1", 10);
         return "test index: " + result;
     }
+
+    @GetMapping("/sen")
+    public String sentinel() {
+        return "test sentinel... ";
+    }
 }

@@ -6,16 +6,31 @@ spring:
   cloud:
     nacos:
       discovery:
-        server-addr: 172.18.144.128:8849
-        namespace: dc26b616-6347-471e-8b59-3f5d67ed041a
+        server-addr: 192.168.137.20:8849
+        namespace: develop
+    sentinel:
+      eager: true
+      transport:
+        dashboard: 192.168.137.20:8086
+        port: 8719
+      datasource:
+        ds1:
+          nacos:
+            server-addr: 192.168.137.20:8849
+            namespace: develop
+            dataId: service-goods-flow-rules
+            data-type: json
+            rule-type: flow
 dubbo:
   application:
     name: ${spring.application.name}
-    register-consumer: true
+    register-consumer: false
   protocol:
     name: dubbo
     port: -1
   registry:
-    address: nacos://172.18.144.128:8849
+    address: nacos://192.168.137.20:8849
   cloud:
     subscribed-services: service-user
+  consumer:
+    check: false
