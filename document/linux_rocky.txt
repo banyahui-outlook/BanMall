@@ -1,17 +1,19 @@
----------------------- hyperV -----------------------
-https://blog.csdn.net/rai369963/article/details/83450947
+---------------------- hyperV Linux-----------------------
+###https://blog.csdn.net/rai369963/article/details/83450947
+###https://blog.csdn.net/lwbjyl/article/details/100726812
 
-有时候yum下载时速度很慢，可以考虑清除缓存并更新
+yum缓存清除更新
 yum clean all
 yum makecache
-yum update
+yum -y update
 
-linux8 网络启动
+网络操作
 ###https://blog.csdn.net/qq_37960324/article/details/103007035
 nmcli connection up eth0
 nmcli connection down eth0
 nmcli connection reload
 
+服务状态
 systemctl status keepalived
 systemctl list-unit-files --type=service | grep httpd
 
@@ -58,9 +60,14 @@ sudo yum install -y docker-ce docker-ce-cli containerd.io
 sudo systemctl start docker
 
 ###https://www.cnblogs.com/wangjq19920210/p/9287545.html
+###https://www.cnblogs.com/nhdlb/p/12567154.html
 vi /etc/docker/daemon.json
-{ 
-    "registry-mirrors": ["https://docker.mirrors.ustc.edu.cn"] 
+{
+  "registry-mirrors": [
+    "https://docker.mirrors.ustc.edu.cn",
+    "https://registry.docker-cn.com",
+    "http://hub-mirror.c.163.com"
+  ]
 }
 
 
@@ -69,6 +76,10 @@ vi /etc/docker/daemon.json
 mysql                                            		镜像名
 --name your_db_name			定义的容器名
 -d					后台运行容器
+
+如果创建时未指定 --restart=always ,可通过update 命令
+docker update --restart=always xxx
+
 
 
 
@@ -102,7 +113,7 @@ expire_logs_days = 30
 #read_only = 1
 
 sudo docker run -itd -p 3306:3306 \
---name=mysql_standalone_21_3306 \
+--name=mysql_standalone_3306 \
 -v /home/mysql/standalone3306/data:/var/lib/mysql \
 -v /home/mysql/standalone3306/conf:/etc/mysql/conf.d \
 -v /home/mysql/standalone3306/log:/var/log/mysql \
@@ -117,43 +128,43 @@ mysql
 ###https://www.cnblogs.com/bdicaprio/articles/9877525.html
 ###https://blog.51cto.com/phpervip/2064296
 
-%%%%%%%%%---192.168.137.21---%%%%%%%%%
-sudo docker run -itd -p 3307:3306 \
---name=mysql_cluster_master_21_3307 \
--v /home/mysql/cluster3307/data:/var/lib/mysql \
--v /home/mysql/cluster3307/conf:/etc/mysql/conf.d \
--v /home/mysql/cluster3307/log:/var/log/mysql \
--e MYSQL_ROOT_PASSWORD=ban \
---privileged=true \
-mysql
+#%%%%%%%%%---server1---%%%%%%%%%
+#sudo docker run -itd -p 3307:3306 \
+#--name=mysql_cluster_master_s1_3307 \
+#-v /home/mysql/cluster3307/data:/var/lib/mysql \
+#-v /home/mysql/cluster3307/conf:/etc/mysql/conf.d \
+#-v /home/mysql/cluster3307/log:/var/log/mysql \
+#-e MYSQL_ROOT_PASSWORD=ban \
+#--privileged=true \
+#mysql
 
-%%%%%%%%%---192.168.137.22---%%%%%%%%%
-sudo docker run -itd -p 3307:3306 \
---name=mysql_cluster_slave_22_3307 \
--v /home/mysql/cluster3307/data:/var/lib/mysql \
--v /home/mysql/cluster3307/conf:/etc/mysql/conf.d \
--v /home/mysql/cluster3307/log:/var/log/mysql \
--e MYSQL_ROOT_PASSWORD=ban \
---privileged=true \
-mysql
+#%%%%%%%%%---server2---%%%%%%%%%
+#sudo docker run -itd -p 3307:3306 \
+#--name=mysql_cluster_slave_s2_3307 \
+#-v /home/mysql/cluster3307/data:/var/lib/mysql \
+#-v /home/mysql/cluster3307/conf:/etc/mysql/conf.d \
+#-v /home/mysql/cluster3307/log:/var/log/mysql \
+#-e MYSQL_ROOT_PASSWORD=ban \
+#--privileged=true \
+#mysql
 
-%%%%%%%%%------exec sql------%%%%%%%%%
-show master status;
+#%%%%%%%%%------exec sql------%%%%%%%%%
+#show master status;
 
-CHANGE MASTER TO master_host = '192.168.137.21',
-master_port = 3307,
-master_user = 'root',
-master_password = 'ban',
-master_log_file = 'mysql-bin.000004',
-master_log_pos = 156;
+#CHANGE MASTER TO master_host = '[s1_ip]',
+#master_port = 3307,
+#master_user = 'root',
+#master_password = 'ban',
+#master_log_file = 'mysql-bin.000004',
+#master_log_pos = 156;
 
-show slave status;
-select * from performance_schema.replication_applier_status_by_worker;
+#show slave status;
+#select * from performance_schema.replication_applier_status_by_worker;
 
-stop slave;
-reset slave all;
-set global sql_slave_skip_counter=1;
-start slave;
+#stop slave;
+#reset slave all;
+#set global sql_slave_skip_counter=1;
+#start slave;
 
 
 
@@ -168,26 +179,28 @@ default-character-set = utf8mb4
 [mysqld]
 character-set-server = utf8mb4
 collation-server = utf8mb4_unicode_ci
+server-id = 21
+auto_increment_offset = 1
+auto_increment_increment = 2    
+log-bin = mysql-bin
+binlog_format = ROW
+log-slave-updates = true
 back_log = 512
 key_buffer_size = 64M
 max_connections = 200
-log-bin = mysql-bin  
-server-id = 21
-binlog_format = MIXED
 expire_logs_days = 30
 #主-主配置
 binlog-do-db = nacos
 binlog-ignore-db = mysql
-log-slave-updates
 sync_binlog = 1
 auto_increment_offset = 1
 auto_increment_increment = 2
 replicate-do-db = nacos
 replicate-ignore-db = mysql,information_schema
 
-%%%%%%%%%---192.168.137.21---%%%%%%%%%
+%%%%%%%%%---server1---%%%%%%%%%
 sudo docker run -itd -p 3308:3306 \
---name=mysql_double_master_21_3308 \
+--name=mysql_double_master_s1_3308 \
 -v /home/mysql/double_master3308/data:/var/lib/mysql \
 -v /home/mysql/double_master3308/conf:/etc/mysql/conf.d \
 -v /home/mysql/double_master3308/log:/var/log/mysql \
@@ -195,9 +208,9 @@ sudo docker run -itd -p 3308:3306 \
 --privileged=true \
 mysql
 
-%%%%%%%%%---192.168.137.22---%%%%%%%%%
+%%%%%%%%%---server2---%%%%%%%%%
 sudo docker run -itd -p 3308:3306 \
---name=mysql_double_master_22_3308 \
+--name=mysql_double_master_s2_3308 \
 -v /home/mysql/double_master3308/data:/var/lib/mysql \
 -v /home/mysql/double_master3308/conf:/etc/mysql/conf.d \
 -v /home/mysql/double_master3308/log:/var/log/mysql \
@@ -209,7 +222,7 @@ mysql
 show master status;
 
 change master to
-master_host='192.168.137.21', master_port=3308, master_user='root', master_password='ban',
+master_host='[s1_ip]', master_port=3308, master_user='root', master_password='ban',
 master_log_file='mysql-bin.000003', master_log_pos=693;
 
 start slave;
@@ -223,179 +236,78 @@ reset slave all;
 
 
 
------------------------ nginx ----------------------- 
-###https://registry.hub.docker.com/_/nginx
-###https://www.runoob.com/docker/docker-install-nginx.html
-
-sudo docker run -itd -p 8849:80 \
--v /home/nginx/html:/usr/share/nginx/html \
--v /home/nginx/conf/nginx.conf:/etc/nginx/nginx.conf \
--v /home/nginx/log:/var/log/nginx \
---name nginx_nacos_21_8849 \
-nginx
-
-%%%%%%%%%nginx.conf%%%%%%%%%
-#工作进程数 1,不要超过计算机的核数,四核配置4,八核配置8
-worker_processes  1;
-#工作连接数,也就是线程,一个进程有1024个线程,
-events {
-    worker_connections  1024;
-}
-#http请求配置
-http {
-    default_type  application/octet-stream;
-    #sendfile为发送文件,要on开启
-    sendfile        on;
-    #keepalive_timeout超时时间
-    keepalive_timeout  60;
-
-    upstream nacos {
-        server 192.168.137.21:8848 weight=1;
-        server 192.168.137.22:8848 weight=2;
-        server 192.168.137.23:8848 weight=3;
-    }
-    server {
-        #监听的端口,这里为80
-        listen       80;
-        #server_name就是域名,
-        #server_name  localhost;
-		
-        #location域名代理地址 / 代表所有请求路径
-        location / {
-            proxy_pass http://nacos;
-        }
-    }
-}
-
-
-
-
-
-
------------------------ keepalived -----------------------
-###https://blog.51cto.com/andyxu/2286045
-###https://www.cnblogs.com/xxoome/p/8621677.html
-###https://blog.csdn.net/wngua/article/details/54668794
-###https://www.jianshu.com/p/fdc0a788f55a/
-
-wget http://www.keepalived.org/software
-###yum install -y gcc openssl-devel popt-devel
-###yum install -y make automake autoconf libtool
-cd keepalived-2.2.4
-./configure --prefix=/home/keepalived/install
-make && make install
--- test
-cp /home/keepalived/keepalived-2.2.4/keepalived/etc/keepalived/keepalived.conf /home/keepalived/install/sbin
--- auto start
-###https://www.cnblogs.com/sky-cheng/p/10768318.html
-cp /home/keepalived/install/sbin/keepalived /usr/sbin/
-mkdir /etc/keepalived
-cp /home/keepalived/install/sbin/keepalived.conf /etc/keepalived/
-cp /home/keepalived/install/etc/sysconfig/keepalived /etc/sysconfig/
-cp /home/keepalived/keepalived-2.2.4/keepalived/etc/init.d/keepalived /etc/init.d/
-chmod +x /etc/init.d/keepalived
-vi /lib/systemd/system/keepalived.service
-chkconfig --add keepalived
-systemctl enable keepalived
-tail -f /var/log/messages
-
-
-%%%%%%%%%keepalived.conf%%%%%%%%%%
-! Configuration File for keepalived
-global_defs {
-    #一个没重复的名字即可
-    router_id nacos_nginx_21_8849
-    # 多播模式
-    # vrrp_strict
-}
-# 检测nginx是否运行
-# vrrp_script chk_nginx {
-#         script "/etc/keepalived/nginx_check.sh"
-#         interval 2
-#         weight -20
-# }
-vrrp_instance VI_1 {
-    # 此处不设置为MASTER，通过priority来竞争master
-    state BACKUP
-    # 网卡名字，文章下方会给出如何获取网卡名字的方法
-    interface eth0
-    # 同一个keepalived集群的virtual_router_id相同
-    virtual_router_id 51
-    # 权重，master要大于slave
-    priority 100
-    # 主备通讯时间间隔
-    advert_int 1
-    # 如果两节点的上联交换机禁用了组播，则采用vrrp单播通告的方式
-    # 本机ip
-    unicast_src_ip 192.168.137.21
-    unicast_peer {
-        # 其他机器ip
-        192.168.137.22
-    }
-    # 设置nopreempt防止抢占资源
-    nopreempt
-    # 主备保持一致
-    authentication {
-        auth_type PASS
-        auth_pass 1111
-    }
-    # 与上方nginx运行状况检测呼应
-    # track_script {
-    #     chk_nginx
-    # }
-    virtual_ipaddress {
-        # 虚拟ip地址（VIP，一个尚未占用的内网ip即可）
-        192.168.137.20
-    }
-}
----- Unicast peers are not supported in strict mode
-###https://blog.csdn.net/qq_29974229/article/details/120760434
-
-
-
-
-
 ----------------------- nacos standalone mysql standalone -----------------------
 ###https://registry.hub.docker.com/r/nacos/nacos-server
 ###https://nacos.io/zh-cn/docs/quick-start-docker.html
 ###https://github.com/alibaba/nacos/blob/master/distribution/conf/nacos-mysql.sql
 
-sudo docker run -itd -p 8848:8848 \
---name nacos_mysql_standalone_21_8848 \
+%%%%%%%%application.properties%%%%%%%%%%
+#springboot2.0之前
+server.servlet.contextPath=/nacos
+#springboot2.0之后
+server.contextPath=/nacos
+server.port=8848
+spring.datasource.platform=mysql
+#mysql 配置
+db.num=2
+db.url.0=jdbc:mysql://192.168.0.97:3308/nacos?characterEncoding=utf8&connectTimeout=10000&socketTimeout=3000&autoReconnect=true&useSSL=false
+db.url.1=jdbc:mysql://192.168.0.98:3308/nacos?characterEncoding=utf8&connectTimeout=10000&socketTimeout=3000&autoReconnect=true&useSSL=false
+db.user=root
+db.password=ban
+
+
+ sudo docker run -itd -p 8848:8848 \
+--name nacos_mysql_standalone_8848 \
+--env NACOS_SERVER_IP=192.168.0.97 \
 --env MODE=standalone \
---env NACOS_SERVER_IP=192.168.137.21 \
---env NACOS_APPLICATION_PORT=8848 \
---env SPRING_DATASOURCE_PLATFORM=mysql \
---env MYSQL_DATABASE_NUM=1 \
---env MYSQL_SERVICE_HOST=192.168.137.21 \
---env MYSQL_SERVICE_PORT=3306 \
---env MYSQL_SERVICE_DB_NAME=nacos \
---env MYSQL_SERVICE_USER=root \
---env MYSQL_SERVICE_PASSWORD=ban \
 --env JVM_XMS=640m \
 --env JVM_XMX=640m \
 --env JVM_XMN=256m \
 --env JVM_MS=128m \
 --env JVM_MMS=256m \
+-v /home/nacos/standalone/conf/application.properties:/home/nacos/conf/application.properties \
+-v /home/nacos/standalone/log:/home/nacos/logs \
 --privileged=true \
-nacos/nacos-server
+ nacos/nacos-server
+
+/home/nacos/conf
+
+#sudo docker run -itd -p 8848:8848 \
+#--name nacos_mysql_standalone_8848 \
+#--env MODE=standalone \
+#--env NACOS_SERVER_IP=[s1_ip] \
+#--env NACOS_APPLICATION_PORT=8848 \
+#--env SPRING_DATASOURCE_PLATFORM=mysql \
+#--env MYSQL_DATABASE_NUM=1 \
+#--env MYSQL_SERVICE_HOST=[mysql_ip] \
+#--env MYSQL_SERVICE_PORT=3306 \
+#--env MYSQL_SERVICE_DB_NAME=nacos \
+#--env MYSQL_SERVICE_USER=root \
+#--env MYSQL_SERVICE_PASSWORD=ban \
+#--env JVM_XMS=640m \
+#--env JVM_XMX=640m \
+#--env JVM_XMN=256m \
+#--env JVM_MS=128m \
+#--env JVM_MMS=256m \
+#--privileged=true \
+#nacos/nacos-server
 
 
 
 ----------------------- nacos standalone mysql cluster -----------------------
 sudo docker run -itd -p 8848:8848 \
---name nacos_standalone_mysql_cluster_21_8848 \
+--name nacos_standalone_mysql_cluster_8848 \
 --env MODE=standalone \
---env NACOS_SERVER_IP=192.168.137.21 \
+--env NACOS_SERVER_IP=[s1_ip] \
 --env NACOS_APPLICATION_PORT=8848 \
 --env SPRING_DATASOURCE_PLATFORM=mysql \
 --env MYSQL_DATABASE_NUM=2 \
---env MYSQL_SERVICE_HOST=192.168.137.21 \
+--env MYSQL_SERVICE_HOST=[mysql_s1_ip] \
 --env MYSQL_SERVICE_PORT=3308 \
 --env MYSQL_SERVICE_DB_NAME=nacos \
 --env MYSQL_SERVICE_USER=root \
 --env MYSQL_SERVICE_PASSWORD=ban \
---env MYSQL_SLAVE_SERVICE_HOST=192.168.137.22 \
+--env MYSQL_SLAVE_SERVICE_HOST=[mysql_s2_ip] \
 --env MYSQL_SLAVE_SERVICE_PORT=3308 \
 --env JVM_XMS=640m \
 --env JVM_XMX=640m \
@@ -418,104 +330,103 @@ add MYSQL_SLAVE_SERVICE_HOST & MYSQL_SLAVE_SERVICE_PORT
 ###https://blog.csdn.net/xu990128638/article/details/119492529
 ###https://blog.csdn.net/qq_39099625/article/details/118610964
 
-%%%%%%%%%192.168.137.21%%%%%%%%%
-sudo docker run -itd -p 8848:8848 \
--p 7848:7848 \
--p 9848:9848 \
--p 9849:9849 \
---name nacos_cluster_mysql_standalone_21_8848 \
---env MODE=cluster \
---env NACOS_SERVER_IP=192.168.137.21 \
---env NACOS_APPLICATION_PORT=8848 \
---env NACOS_SERVERS=192.168.137.21:8848,192.168.137.22:8848,192.168.137.23:8848 \
---env SPRING_DATASOURCE_PLATFORM=mysql \
---env MYSQL_DATABASE_NUM=1 \
---env MYSQL_SERVICE_HOST=192.168.137.21 \
---env MYSQL_SERVICE_PORT=3306 \
---env MYSQL_SERVICE_DB_NAME=nacos \
---env MYSQL_SERVICE_USER=root \
---env MYSQL_SERVICE_PASSWORD=ban \
---env JVM_XMS=640m \
---env JVM_XMX=640m \
---env JVM_XMN=256m \
---env JVM_MS=128m \
---env JVM_MMS=256m \
---privileged=true \
-nacos/nacos-server
+#%%%%%%%%%server1%%%%%%%%%
+#sudo docker run -itd -p 8848:8848 \
+#-p 7848:7848 \
+#-p 9848:9848 \
+#-p 9849:9849 \
+#--name nacos_cluster_mysql_standalone_21_8848 \
+#--env MODE=cluster \
+#--env NACOS_SERVER_IP=[s1_ip] \
+#--env NACOS_APPLICATION_PORT=8848 \
+#--env NACOS_SERVERS=[s1_ip]:8848,[s2_ip]:8848,[s3_ip]:8848 \
+#--env SPRING_DATASOURCE_PLATFORM=mysql \
+#--env MYSQL_DATABASE_NUM=1 \
+#--env MYSQL_SERVICE_HOST=[mysql_s1_ip] \
+#--env MYSQL_SERVICE_PORT=3306 \
+#--env MYSQL_SERVICE_DB_NAME=nacos \
+#--env MYSQL_SERVICE_USER=root \
+#--env MYSQL_SERVICE_PASSWORD=ban \
+#--env JVM_XMS=640m \
+#--env JVM_XMX=640m \
+#--env JVM_XMN=256m \
+#--env JVM_MS=128m \
+#--env JVM_MMS=256m \
+#--privileged=true \
+#nacos/nacos-server
 
-%%%%%%%%%192.168.137.22%%%%%%%%%
-sudo docker run -itd -p 8848:8848 \
--p 7848:7848 \
--p 9848:9848 \
--p 9849:9849 \
---name nacos_cluster_mysql_standalone_22_8848 \
---env MODE=cluster \
---env NACOS_SERVER_IP=192.168.137.22 \
---env NACOS_APPLICATION_PORT=8848 \
---env NACOS_SERVERS=192.168.137.21:8848,192.168.137.22:8848,192.168.137.23:8848 \
---env SPRING_DATASOURCE_PLATFORM=mysql \
---env MYSQL_DATABASE_NUM=1 \
---env MYSQL_SERVICE_HOST=192.168.137.21 \
---env MYSQL_SERVICE_PORT=3306 \
---env MYSQL_SERVICE_DB_NAME=nacos \
---env MYSQL_SERVICE_USER=root \
---env MYSQL_SERVICE_PASSWORD=ban \
---env JVM_XMS=640m \
---env JVM_XMX=640m \
---env JVM_XMN=256m \
---env JVM_MS=128m \
---env JVM_MMS=256m \
---privileged=true \
-nacos/nacos-server
+#%%%%%%%%%server2%%%%%%%%%
+#sudo docker run -itd -p 8848:8848 \
+#-p 7848:7848 \
+#-p 9848:9848 \
+#-p 9849:9849 \
+#--name nacos_cluster_mysql_standalone_22_8848 \
+#--env MODE=cluster \
+#--env NACOS_SERVER_IP=[s2_ip] \
+#--env NACOS_APPLICATION_PORT=8848 \
+#--env NACOS_SERVERS=[s1_ip]:8848,[s2_ip]:8848,[s3_ip]:8848 \
+#--env SPRING_DATASOURCE_PLATFORM=mysql \
+#--env MYSQL_DATABASE_NUM=1 \
+#--env MYSQL_SERVICE_HOST=[mysql_s1_ip] \
+#--env MYSQL_SERVICE_PORT=3306 \
+#--env MYSQL_SERVICE_DB_NAME=nacos \
+#--env MYSQL_SERVICE_USER=root \
+#--env MYSQL_SERVICE_PASSWORD=ban \
+#--env JVM_XMS=640m \
+#--env JVM_XMX=640m \
+#--env JVM_XMN=256m \
+#--env JVM_MS=128m \
+#--env JVM_MMS=256m \
+#--privileged=true \
+#nacos/nacos-server
 
-%%%%%%%%%192.168.137.23%%%%%%%%%
-sudo docker run -itd -p 8848:8848 \
--p 7848:7848 \
--p 9848:9848 \
--p 9849:9849 \
---name nacos_cluster_mysql_standalone_23_8848 \
---env MODE=cluster \
---env NACOS_SERVER_IP=192.168.137.23 \
---env NACOS_APPLICATION_PORT=8848 \
---env NACOS_SERVERS=192.168.137.21:8848,192.168.137.22:8848,192.168.137.23:8848 \
---env SPRING_DATASOURCE_PLATFORM=mysql \
---env MYSQL_DATABASE_NUM=1 \
---env MYSQL_SERVICE_HOST=192.168.137.21 \
---env MYSQL_SERVICE_PORT=3306 \
---env MYSQL_SERVICE_DB_NAME=nacos \
---env MYSQL_SERVICE_USER=root \
---env MYSQL_SERVICE_PASSWORD=ban \
---env JVM_XMS=640m \
---env JVM_XMX=640m \
---env JVM_XMN=256m \
---env JVM_MS=128m \
---env JVM_MMS=256m \
---privileged=true \
-nacos/nacos-server
+#%%%%%%%%%server3%%%%%%%%%
+#sudo docker run -itd -p 8848:8848 \
+#-p 7848:7848 \
+#-p 9848:9848 \
+#-p 9849:9849 \
+#--name nacos_cluster_mysql_standalone_23_8848 \
+#--env MODE=cluster \
+#--env NACOS_SERVER_IP=[s3_ip] \
+#--env NACOS_APPLICATION_PORT=8848 \
+#--env NACOS_SERVERS=[s1_ip]:8848,[s2_ip]:8848,[s3_ip]:8848 \
+#--env SPRING_DATASOURCE_PLATFORM=mysql \
+#--env MYSQL_DATABASE_NUM=1 \
+#--env MYSQL_SERVICE_HOST=[mysql_s1_ip] \
+#--env MYSQL_SERVICE_PORT=3306 \
+#--env MYSQL_SERVICE_DB_NAME=nacos \
+#--env MYSQL_SERVICE_USER=root \
+#--env MYSQL_SERVICE_PASSWORD=ban \
+#--env JVM_XMS=640m \
+#--env JVM_XMX=640m \
+#--env JVM_XMN=256m \
+#--env JVM_MS=128m \
+#--env JVM_MMS=256m \
+#--privileged=true \
+#nacos/nacos-server
 
 
  
 ----------------------- nacos cluster mysql cluster -----------------------
-### vi nacos application.properties
+--数据库始终连接不上，重新下载镜像
 
-%%%%%%%%%192.168.137.21%%%%%%%%%
+%%%%%%%%%server1%%%%%%%%%
 sudo docker run -itd -p 8848:8848 \
 -p 7848:7848 \
 -p 9848:9848 \
 -p 9849:9849 \
---name nacos_mysql_cluster_21_8848 \
+--name nacos_mysql_cluster_s1_8848 \
 --env MODE=cluster \
---env NACOS_SERVER_IP=192.168.137.21 \
 --env NACOS_APPLICATION_PORT=8848 \
---env NACOS_SERVERS=192.168.137.21:8848,192.168.137.22:8848,192.168.137.23:8848 \
+--env NACOS_SERVERS=[s1_ip]:8848,[s2_ip]:8848,[s3_ip]:8848 \
 --env SPRING_DATASOURCE_PLATFORM=mysql \
 --env MYSQL_DATABASE_NUM=2 \
---env MYSQL_SERVICE_HOST=192.168.137.21 \
+--env MYSQL_SERVICE_HOST=[mysql_s1_ip] \
 --env MYSQL_SERVICE_PORT=3308 \
 --env MYSQL_SERVICE_DB_NAME=nacos \
 --env MYSQL_SERVICE_USER=root \
 --env MYSQL_SERVICE_PASSWORD=ban \
---env MYSQL_SLAVE_SERVICE_HOST=192.168.137.22 \
+--env MYSQL_SLAVE_SERVICE_HOST=[mysql_s2_ip] \
 --env MYSQL_SLAVE_SERVICE_PORT=3308 \
 --env JVM_XMS=640m \
 --env JVM_XMX=640m \
@@ -525,24 +436,23 @@ sudo docker run -itd -p 8848:8848 \
 --privileged=true \
 nacos/nacos-server
 
-%%%%%%%%%192.168.137.22%%%%%%%%%
+%%%%%%%%%server2%%%%%%%%%
 sudo docker run -itd -p 8848:8848 \
 -p 7848:7848 \
 -p 9848:9848 \
 -p 9849:9849 \
---name nacos_mysql_cluster_22_8848 \
+--name nacos_mysql_cluster_s2_8848 \
 --env MODE=cluster \
---env NACOS_SERVER_IP=192.168.137.22 \
 --env NACOS_APPLICATION_PORT=8848 \
---env NACOS_SERVERS=192.168.137.21:8848,192.168.137.22:8848,192.168.137.23:8848 \
+--env NACOS_SERVERS=[s1_ip]:8848,[s2_ip]:8848,[s3_ip]:8848 \
 --env SPRING_DATASOURCE_PLATFORM=mysql \
 --env MYSQL_DATABASE_NUM=2 \
---env MYSQL_SERVICE_HOST=192.168.137.21 \
+--env MYSQL_SERVICE_HOST=[mysql_s1_ip] \
 --env MYSQL_SERVICE_PORT=3308 \
 --env MYSQL_SERVICE_DB_NAME=nacos \
 --env MYSQL_SERVICE_USER=root \
 --env MYSQL_SERVICE_PASSWORD=ban \
---env MYSQL_SLAVE_SERVICE_HOST=192.168.137.22 \
+--env MYSQL_SLAVE_SERVICE_HOST=[mysql_s2_ip] \
 --env MYSQL_SLAVE_SERVICE_PORT=3308 \
 --env JVM_XMS=640m \
 --env JVM_XMX=640m \
@@ -552,24 +462,23 @@ sudo docker run -itd -p 8848:8848 \
 --privileged=true \
 nacos/nacos-server
 
-%%%%%%%%%192.168.137.23%%%%%%%%%
+%%%%%%%%%server3%%%%%%%%%
 sudo docker run -itd -p 8848:8848 \
 -p 7848:7848 \
 -p 9848:9848 \
 -p 9849:9849 \
---name nacos_mysql_cluster_23_8848 \
+--name nacos_mysql_cluster_s3_8848 \
 --env MODE=cluster \
---env NACOS_SERVER_IP=192.168.137.23 \
 --env NACOS_APPLICATION_PORT=8848 \
---env NACOS_SERVERS=192.168.137.21:8848,192.168.137.22:8848,192.168.137.23:8848 \
+--env NACOS_SERVERS=[s1_ip]:8848,[s2_ip]:8848,[s3_ip]:8848 \
 --env SPRING_DATASOURCE_PLATFORM=mysql \
 --env MYSQL_DATABASE_NUM=2 \
---env MYSQL_SERVICE_HOST=192.168.137.21 \
+--env MYSQL_SERVICE_HOST=[mysql_s1_ip] \
 --env MYSQL_SERVICE_PORT=3308 \
 --env MYSQL_SERVICE_DB_NAME=nacos \
 --env MYSQL_SERVICE_USER=root \
 --env MYSQL_SERVICE_PASSWORD=ban \
---env MYSQL_SLAVE_SERVICE_HOST=192.168.137.22 \
+--env MYSQL_SLAVE_SERVICE_HOST=[mysql_s2_ip] \
 --env MYSQL_SLAVE_SERVICE_PORT=3308 \
 --env JVM_XMS=640m \
 --env JVM_XMX=640m \
@@ -578,6 +487,130 @@ sudo docker run -itd -p 8848:8848 \
 --env JVM_MMS=256m \
 --privileged=true \
 nacos/nacos-server
+
+
+
+
+
+
+----------------------- nginx ----------------------- 
+###https://registry.hub.docker.com/_/nginx
+###https://www.runoob.com/docker/docker-install-nginx.html
+
+sudo docker run -itd -p 8849:80 \
+--name nginx_nacos_s1_8849 \
+-v /home/nginx/nginx_nacos/html:/usr/share/nginx/html \
+-v /home/nginx/nginx_nacos/conf/nginx.conf:/etc/nginx/nginx.conf \
+-v /home/nginx/nginx_nacos/log:/var/log/nginx \
+nginx
+
+%%%%%%%%%nginx.conf%%%%%%%%%
+#工作进程数 1,不要超过计算机的核数,四核配置4,八核配置8
+worker_processes  1;
+#工作连接数,也就是线程,一个进程有1024个线程,
+events {
+    worker_connections  1024;
+}
+#http请求配置
+http {
+    default_type	application/octet-stream;
+    sendfile		on;
+    keepalive_timeout	60;
+    upstream nacos {
+        server [s1_ip]:8848 weight=1;
+        server [s2_ip]:8848 weight=2;
+        server [s3_ip]:8848 weight=3;
+    }
+    server {
+        listen	80;
+        location / {
+            proxy_pass http://nacos;
+        }
+    }
+}
+
+
+
+
+
+
+----------------------- keepalived -----------------------
+###https://blog.51cto.com/andyxu/2286045
+###https://www.cnblogs.com/xxoome/p/8621677.html
+###https://blog.csdn.net/wngua/article/details/54668794
+###https://www.jianshu.com/p/fdc0a788f55a/
+
+wget http://www.keepalived.org/software
+###yum install -y gcc openssl-devel popt-devel
+###yum install -y make automake autoconf libtool
+./configure --prefix=/home/keepalived/install
+make && make install
+-- test
+cp /home/keepalived/keepalived-2.2.4/keepalived/etc/keepalived/keepalived.conf /home/keepalived/install/sbin
+-- auto start
+###https://www.cnblogs.com/sky-cheng/p/10768318.html
+cp /home/keepalived/install/sbin/keepalived /usr/sbin/
+mkdir /etc/keepalived
+cp /home/keepalived/install/sbin/keepalived.conf /etc/keepalived/
+cp /home/keepalived/install/etc/sysconfig/keepalived /etc/sysconfig/
+cp /home/keepalived/keepalived-2.2.4/keepalived/etc/init.d/keepalived /etc/init.d/
+chmod +x /etc/init.d/keepalived
+vi /lib/systemd/system/keepalived.service
+chkconfig --add keepalived
+systemctl enable keepalived
+tail -f /var/log/messages
+
+
+%%%%%%%%%keepalived.conf%%%%%%%%%%
+! Configuration File for keepalived
+global_defs {
+    #一个没重复的名字即可
+    router_id keepalived_[v_ip]_s1
+    # 多播模式
+    # vrrp_strict
+}
+# 检测nginx是否运行
+# vrrp_script chk_nginx {
+#         script "/etc/keepalived/nginx_check.sh"
+#         interval 2
+#         weight -20
+# }
+vrrp_instance VI_1 {
+    # 此处不设置为MASTER，通过priority来竞争master
+    state BACKUP
+    # 网卡名字，文章下方会给出如何获取网卡名字的方法
+    interface eth0
+    # 同一个keepalived集群的virtual_router_id相同
+    virtual_router_id 51
+    # 权重，master要大于slave
+    priority 100
+    # 主备通讯时间间隔
+    advert_int 1
+    # 如果两节点的上联交换机禁用了组播，则采用vrrp单播通告的方式
+    # 本机ip
+    unicast_src_ip [s1_ip]
+    unicast_peer {
+        # 其他机器ip
+        [s2_ip]
+    }
+    # 设置nopreempt防止抢占资源
+    nopreempt
+    # 主备保持一致
+    authentication {
+        auth_type PASS
+        auth_pass 1111
+    }
+    # 与上方nginx运行状况检测呼应
+    # track_script {
+    #     chk_nginx
+    # }
+    virtual_ipaddress {
+        # 虚拟ip地址（VIP，一个尚未占用的内网ip即可）
+        [v_ip]
+    }
+}
+---- Unicast peers are not supported in strict mode
+###https://blog.csdn.net/qq_29974229/article/details/120760434
 
 
 
@@ -590,12 +623,12 @@ nacos/nacos-server
 ###https://www.cnblogs.com/fanshuyao/p/14606396.html
 ###https://www.cnblogs.com/crazymakercircle/p/14285001.html
 
-docker pull bladex/sentinel-dashboard
+#docker pull bladex/sentinel-dashboard
 
-sudo docker run -itd -p 8858:8858 \
--p 8719:8719 \
---name sentinel_21_8858 \
-bladex/sentinel-dashboard
+#sudo docker run -itd -p 8858:8858 \
+#-p 8719:8719 \
+#--name sentinel_s1_8858 \
+#bladex/sentinel-dashboard
 
 export JAVA_HOME=/home/jdk/jdk-11.0.13
 export PATH=$PATH:$JAVA_HOME/bin:$JAVA_HOME/jre/bin:$PATH
