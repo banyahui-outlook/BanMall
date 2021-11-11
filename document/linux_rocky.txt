@@ -122,6 +122,10 @@ sudo docker run -itd -p 3306:3306 \
 mysql
 
 
+**************
+docker run -itd -p 3306:3306 --name=mysql_standalone_3306 -v D:\Study\Install\Windows-Docker\mysql\data:/var/lib/mysql -v D:\Study\Install\Windows-Docker\mysql\conf:/etc/mysql/conf.d -v D:\Study\Install\Windows-Docker\mysql\logs:/var/log/mysql -e MYSQL_ROOT_PASSWORD=ban --privileged=true --restart=always mysql
+
+
 
 ------------ mysql cluster ------------
 ###https://www.cnblogs.com/dw3306/p/13943008.html
