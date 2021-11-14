@@ -6,12 +6,28 @@ spring:
   cloud:
     nacos:
       config:
-        server-addr: 192.168.137.20:8849
+        server-addr: 127.0.0.1:8848
         namespace: develop
+        group: micro_config
         file-extension: yml
       discovery:
-        server-addr: 192.168.137.20:8849
+        server-addr: 127.0.0.1:8848
         namespace: develop
+        group: micro_service
+    sentinel:
+      eager: true
+      transport:
+        dashboard: 127.0.0.1:8868
+        port: 8729
+      datasource:
+        ds1:
+          nacos:
+            rule-type: flow
+            server-addr: 127.0.0.1:8848
+            namespace: develop
+            group: micro_sentinel
+            dataId: service-user-flow-rules
+            data-type: json
 dubbo:
   application:
     name: ${spring.application.name}
@@ -21,7 +37,7 @@ dubbo:
     name: dubbo
     port: -1
   registry:
-    address: nacos://192.168.137.20:8849
-    parameters: { namespace: dubbo }
+    address: nacos://127.0.0.1:8848
+    parameters: { namespace: develop, group: micro_dubbo }
   consumer:
     check: false

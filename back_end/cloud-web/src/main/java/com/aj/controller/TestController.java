@@ -12,14 +12,9 @@ public class TestController {
     @DubboReference
     private IUserService userService;
 
-    @GetMapping("/index")
-    public String index() {
-        var result = userService.buy("1", 10);
-        return "test index: " + result;
-    }
-
-    @GetMapping("/sen")
-    public String sentinel() {
-        return "test sentinel... ";
+    @GetMapping("/buy")
+    public String buy() {
+        var user = userService.user();
+        return "web invoke user: " + user;
     }
 }

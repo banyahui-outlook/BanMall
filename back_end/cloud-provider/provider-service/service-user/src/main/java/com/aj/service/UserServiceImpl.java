@@ -11,8 +11,8 @@ public class UserServiceImpl implements IUserService {
     private IGoodsService goodsService;
 
     @Override
-    public String buy(String goodId, int count) {
-        String test = goodsService.test();
-        return "user buy good:" + goodId + ", result:" + test;
+    public String user() {
+        String goods = goodsService.goods();
+        return "user success, goods:" + goods;
     }
 }

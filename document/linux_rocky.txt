@@ -42,10 +42,10 @@ vi /etc/docker/daemon.json
 }
 
 -v /your_directory/mysql/data:/var/lib/mysql	挂载数据库数据
--e MYSQL_ROOT_PASSWORD=your_password			数据库root用户的密码
-mysql											镜像名
---name your_db_name								定义的容器名
--d												后台运行容器
+-e MYSQL_ROOT_PASSWORD=your_password	数据库root用户的密码
+mysql					镜像名
+--name your_db_name			定义的容器名
+-d					后台运行容器
 
 动态修改docker容器 属性
 docker update --restart=always/no xxx
@@ -65,11 +65,13 @@ yum clean all
 yum makecache
 yum -y update
 
-网络操作
-###https://blog.csdn.net/qq_37960324/article/details/103007035
-nmcli connection up eth0
-nmcli connection down eth0
-nmcli connection reload
+防火墙
+###https://www.cnblogs.com/heqiuyong/p/10460150.html
+firewall-cmd --zone=public --add-port=3306/tcp --permanent
+firewall-cmd --zone=public --remove-port=3306/tcp --permanent
+firewall-cmd --reload
+firewall-cmd --zone=public --list-ports
+###https://www.cnblogs.com/young233/p/15192237.html
 
 服务状态
 systemctl status keepalived
@@ -116,14 +118,10 @@ docker run -itd -p 3306:3306 \
 --name=mysql_standalone_3306 \
 -v /home/mysql/standalone3306/data:/var/lib/mysql \
 -v /home/mysql/standalone3306/conf:/etc/mysql/conf.d \
--v /home/mysql/standalone3306/log:/var/log/mysql \
+-v /home/mysql/standalone3306/logs:/var/log/mysql \
 -e MYSQL_ROOT_PASSWORD=ban \
 --privileged=true \
 mysql
-
-
-**************
-docker run -itd -p 3306:3306 --name=mysql_standalone_3306 -v D:\Study\Install\Windows-Docker\mysql\data:/var/lib/mysql -v D:\Study\Install\Windows-Docker\mysql\conf:/etc/mysql/conf.d -v D:\Study\Install\Windows-Docker\mysql\logs:/var/log/mysql -e MYSQL_ROOT_PASSWORD=ban --privileged=true --restart=always mysql
 
 
 
@@ -576,7 +574,18 @@ case "$1" in
    exit 1
 esac
 
-
+# 规则
+[
+{
+"resource": "/findById",
+"limitApp":"default",
+"grade":1,
+"count":1,
+"strategy":0,
+"controlBehavior":0,
+"clusterMode":false
+}
+]
 
 
 

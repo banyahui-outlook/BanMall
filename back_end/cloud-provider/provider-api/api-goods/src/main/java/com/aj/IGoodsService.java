@@ -1,5 +1,5 @@
 package com.aj;
 
 public interface IGoodsService {
-    String test();
+    String goods();
 }

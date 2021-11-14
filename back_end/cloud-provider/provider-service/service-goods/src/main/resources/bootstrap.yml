@@ -24,7 +24,7 @@ spring:
           nacos:
             rule-type: flow
             server-addr: 127.0.0.1:8848
-            namespace: sentinel
+            namespace: develop
             group: micro_sentinel
             dataId: service-goods-flow-rules
             data-type: json
