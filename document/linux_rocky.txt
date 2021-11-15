@@ -587,7 +587,8 @@ esac
 }
 ]
 
-
+---dubbo无关配置
+###https://github.com/apache/dubbo/issues/6645
 
 
 

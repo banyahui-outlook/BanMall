@@ -20,14 +20,46 @@ spring:
         dashboard: 127.0.0.1:8868
         port: 8719
       datasource:
-        ds1:
+        flow:
           nacos:
-            rule-type: flow
             server-addr: 127.0.0.1:8848
             namespace: develop
-            group: micro_sentinel
-            dataId: service-goods-flow-rules
+            dataId: ${spring.application.name}-flow-rules
+            groupId: micro_sentinel
             data-type: json
+            rule-type: flow
+        degrade:
+          nacos:
+            server-addr: 127.0.0.1:8848
+            namespace: develop
+            dataId: ${spring.application.name}-degrade-rules
+            groupId: micro_sentinel
+            data-type: json
+            rule-type: degrade
+        system:
+          nacos:
+            server-addr: 127.0.0.1:8848
+            namespace: develop
+            dataId: ${spring.application.name}-system-rules
+            groupId: micro_sentinel
+            data-type: json
+            rule-type: system
+        authority:
+          nacos:
+            server-addr: 127.0.0.1:8848
+            namespace: develop
+            dataId: ${spring.application.name}-authority-rules
+            groupId: micro_sentinel
+            data-type: json
+            rule-type: authority
+        param-flow:
+          nacos:
+            server-addr: 127.0.0.1:8848
+            namespace: develop
+            dataId: ${spring.application.name}-param-flow-rules
+            groupId: micro_sentinel
+            data-type: json
+            rule-type: param-flow
 dubbo:
   application:
     name: ${spring.application.name}
@@ -39,5 +71,7 @@ dubbo:
   registry:
     address: nacos://127.0.0.1:8848
     parameters: { namespace: develop, group: micro_dubbo }
+    use-as-config-center: false
+    use-as-metadata-center: false
   consumer:
     check: false
