@@ -1,12 +1,12 @@
 server:
-  port: 8800
+  port: 8810
 spring:
   application:
-    name: user-service
+    name: order-service
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://192.168.1.11:3306/user?characterEncoding=utf8&serverTimezone=UTC
+    url: jdbc:mysql://192.168.1.11:3306/order?characterEncoding=utf8&serverTimezone=UTC
     username: root
     password: ban
     hikari:
@@ -29,3 +29,7 @@ eureka:
   client:
     service-url:
       defaultZone: http://localhost:8700/eureka
+ribbon:
+  eager-load:
+    enabled: true
+    clients: user-service

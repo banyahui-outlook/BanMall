@@ -6,10 +6,13 @@
     <groupId>com.ban</groupId>
     <artifactId>itcast_cloud</artifactId>
     <version>1.0.0</version>
+    <packaging>pom</packaging>
+
     <modules>
         <module>user_service</module>
+        <module>order_service</module>
+        <module>eureka_server</module>
     </modules>
-    <packaging>pom</packaging>
 
     <properties>
         <java.version>11</java.version>
