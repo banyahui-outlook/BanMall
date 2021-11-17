@@ -29,7 +29,19 @@ eureka:
   client:
     service-url:
       defaultZone: http://localhost:8700/eureka
+logging:
+  level:
+    root: DEBUG
 ribbon:
   eager-load:
     enabled: true
     clients: user-service
+feign:
+  client:
+    config:
+      default:
+        loggerLevel: FULL
+  httpclient:
+    enabled: false
+  okhttp:
+    enabled: true
