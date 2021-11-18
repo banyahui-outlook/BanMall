@@ -109,6 +109,7 @@ max_connections = 200
 log-bin = mysql-bin  
 server-id = 1
 binlog_format = MIXED
+#已废弃https://blog.csdn.net/torpidcat/article/details/108683386
 expire_logs_days = 30
 #从库只读 https://www.cnblogs.com/sandea/p/9467176.html
 #read_only = 1
@@ -181,7 +182,7 @@ log-slave-updates = true
 back_log = 512
 key_buffer_size = 64M
 max_connections = 200
-expire_logs_days = 30
+binlog_expire_logs_seconds = 259200
 #主-主配置
 binlog-do-db = nacos
 binlog-ignore-db = mysql
