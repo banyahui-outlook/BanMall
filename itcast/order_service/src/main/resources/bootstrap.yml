@@ -1,5 +1,5 @@
 server:
-  port: 8810
+  port: 6660
 spring:
   application:
     name: order-service
@@ -20,18 +20,21 @@ spring:
     nacos:
       discovery:
         server-addr: 127.0.0.1:8848
+      config:
+        server-addr: 127.0.0.1:8848
+        file-extension: yaml
 mybatis-plus:
   mapper-locations: classpath:/mapper/**/*.xml
   type-aliases-package: com.ban.entity
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:8700/eureka
+#eureka:
+#  client:
+#    service-url:
+#      defaultZone: http://localhost:8700/eureka
 logging:
   level:
-    root: DEBUG
+    root: info
 ribbon:
   eager-load:
     enabled: true

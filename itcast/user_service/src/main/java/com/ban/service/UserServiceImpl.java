@@ -9,9 +9,14 @@ import org.springframework.stereotype.Service;
 @Service
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IUserService {
     @Override
-    public User login(String name) {
+    public User getByName(String name) {
         QueryWrapper<User> wrapper = new QueryWrapper<>();
         wrapper.eq("name", name);
         return baseMapper.selectOne(wrapper);
+    }
+
+    @Override
+    public User login(String name) {
+        return baseMapper.login(name);
     }
 }

@@ -30,8 +30,8 @@ public class OrderApplication {
         return new RandomRule();
     }
 
-//    @Bean
-//    public Logger.Level getLogger() {
-//        return Logger.Level.FULL;
-//    }
+    //    @Bean
+    //    public Logger.Level getLogger() {
+    //        return Logger.Level.FULL;
+    //    }
 }

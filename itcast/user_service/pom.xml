@@ -12,24 +12,42 @@
     <packaging>jar</packaging>
 
     <dependencies>
+        <dependency>
+            <groupId>com.ban</groupId>
+            <artifactId>comm_api</artifactId>
+            <version>1.0.0</version>
+        </dependency>
         <!--https://blog.csdn.net/kenkao/article/details/114987863-->
         <!-- https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-starter-bootstrap -->
         <!--<dependency>-->
         <!--    <groupId>org.springframework.cloud</groupId>-->
         <!--    <artifactId>spring-cloud-starter-bootstrap</artifactId>-->
         <!--</dependency>-->
+
+        <!--https://blog.csdn.net/ttyy1112/article/details/90267092-->
         <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-web -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
+
+        <!--https://www.jb51.net/article/156272.htm-->
+        <!-- https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-starter-netflix-eureka-client -->
         <!--<dependency>-->
         <!--    <groupId>org.springframework.cloud</groupId>-->
         <!--    <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>-->
         <!--</dependency>-->
+        <!--https://blog.csdn.net/typ1805/article/details/86570880-->
+        <!-- https://mvnrepository.com/artifact/com.alibaba.cloud/spring-cloud-starter-alibaba-nacos-discovery -->
         <dependency>
             <groupId>com.alibaba.cloud</groupId>
             <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
+        </dependency>
+        <!--https://www.cnblogs.com/joker-dj/p/12768975.html-->
+        <!-- https://mvnrepository.com/artifact/com.alibaba.cloud/spring-cloud-starter-alibaba-nacos-config -->
+        <dependency>
+            <groupId>com.alibaba.cloud</groupId>
+            <artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
         </dependency>
 
         <dependency>
@@ -40,10 +58,6 @@
             <groupId>com.baomidou</groupId>
             <artifactId>mybatis-plus-boot-starter</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.ban</groupId>
-            <artifactId>comm_api</artifactId>
-            <version>1.0.0</version>
-        </dependency>
+
     </dependencies>
 </project>

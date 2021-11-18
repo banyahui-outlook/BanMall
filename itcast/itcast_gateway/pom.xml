@@ -11,15 +11,19 @@
     <artifactId>itcast_gateway</artifactId>
     <packaging>jar</packaging>
 
-   <dependencies>
-       <dependency>
-           <groupId>com.alibaba.cloud</groupId>
-           <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
-       </dependency>
-       <dependency>
-           <groupId>org.springframework.cloud</groupId>
-           <artifactId>spring-cloud-starter-gateway</artifactId>
-       </dependency>
-   </dependencies>
+    <dependencies>
+        <dependency>
+            <groupId>com.alibaba.cloud</groupId>
+            <artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba.cloud</groupId>
+            <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-gateway</artifactId>
+        </dependency>
+    </dependencies>
 
 </project>

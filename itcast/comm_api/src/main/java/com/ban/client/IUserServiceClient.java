@@ -9,6 +9,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @FeignClient("user-service")
 @RequestMapping("/user")
 public interface IUserServiceClient {
+    @GetMapping("")
+    String index();
+
     @GetMapping("/{id}")
-    User getUser(@PathVariable(value = "id") Long id);
+    User getUserById(@PathVariable(value = "id") Long id);
+
+    @GetMapping("/name/{name}")
+    User getUserByName(@PathVariable(value = "name") String name);
+
+    @GetMapping("/login")
+    User login(String name);
 }

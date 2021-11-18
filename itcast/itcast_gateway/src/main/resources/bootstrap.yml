@@ -1,0 +1,36 @@
+server:
+  port: 6620
+spring:
+  application:
+    name: itcast-gateway
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 127.0.0.1:8848
+      config:
+        server-addr: 127.0.0.1:8848
+        file-extension: yaml
+    gateway:
+      #https://docs.spring.io/spring-cloud-gateway/docs/current/reference/html/#default-filters
+      default-filters:
+        - AddResponseHeader=X-Response-Default-Red, Default-Blue
+      #https://docs.spring.io/spring-cloud-gateway/docs/current/reference/html/#cors-configuration
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: '*'
+            allowedMethods: '*'
+      routes:
+        - id: user_service
+          uri: lb://user-service
+          #https://docs.spring.io/spring-cloud-gateway/docs/current/reference/html/#gateway-request-predicates-factories
+          predicates:
+            - Path=/user/**
+          #https://docs.spring.io/spring-cloud-gateway/docs/current/reference/html/#gatewayfilter-factories
+          filters:
+            - AddRequestParameter=red, blue
+        - id: order_service
+          uri: lb://order-service
+          predicates:
+            - Path=/order/**
+
