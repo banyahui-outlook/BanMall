@@ -52,6 +52,12 @@ docker update --restart=always/no xxx
 
 --- docker compose
 ###https://www.cnblogs.com/wtzbk/p/15125977.html
+###https://wohenliu.com/index.php/archives/310/
+
+###https://zhuanlan.zhihu.com/p/165801438
+docker rmi $(docker images -f "dangling=true" -q)
+
+docker-compose up -d --force-recreate
 
 
 
