@@ -50,7 +50,8 @@ mysql					镜像名
 动态修改docker容器 属性
 docker update --restart=always/no xxx
 
-
+--- docker compose
+###https://www.cnblogs.com/wtzbk/p/15125977.html
 
 
 
