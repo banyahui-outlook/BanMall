@@ -1,11 +1,11 @@
 version: "3.2"
 services:
-  userservice:
-    build: ./user
+  service-user:
+    build: ./service-user
     ports:
       - "6650:6650"
-  orderservice:
-    build: ./order
+  service-order:
+    build: ./service-order
     ports:
       - "6660:6660"
   gateway:
