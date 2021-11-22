@@ -1,0 +1,16 @@
+server:
+  port: 6691
+spring:
+  application:
+    name: mq-comsume
+  rabbitmq:
+    host: 192.168.1.11
+    port: 5672
+    virtual-host: /
+    username: rabbit
+    password: ban
+    listener:
+      simple:
+        prefetch: 1
+      direct:
+        prefetch: 1

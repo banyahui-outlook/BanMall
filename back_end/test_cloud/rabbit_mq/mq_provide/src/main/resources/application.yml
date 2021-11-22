@@ -1,0 +1,11 @@
+server:
+  port: 6690
+spring:
+  application:
+    name: mq-provide
+  rabbitmq:
+    host: 192.168.1.11
+    port: 5672
+    virtual-host: /
+    username: rabbit
+    password: ban

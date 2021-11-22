@@ -588,15 +588,15 @@ esac
 
 # 规则
 [
-{
-"resource": "/findById",
-"limitApp":"default",
-"grade":1,
-"count":1,
-"strategy":0,
-"controlBehavior":0,
-"clusterMode":false
-}
+	{
+		"resource": "/user",
+		"limitApp":"default",
+		"grade":1,
+		"count":1,
+		"strategy":0,
+		"controlBehavior":0,
+		"clusterMode":false
+	}
 ]
 
 ---dubbo无关配置
@@ -618,9 +618,45 @@ docker run -itd \
 rabbitmq:management
 
 
-docker run -itd --name by_rabbitmq \
-rabbitmq:latest
 
+
+
+
+
+----------------------- elk -----------------------
+
+docker network create es-net
+
+docker pull elasticsearch:7.14.2
+
+docker pull kibana:7.14.2
+
+chmod 777 /home/es/data
+
+docker run -d \
+--name by_es \
+-e "ES_JAVA_OPTS=-Xms512m -Xmx512m" \
+-e "discovery.type=single-node" \
+-v /home/es/data:/usr/share/elasticsearch/data \
+-v /home/es/plugin:/usr/share/elasticsearch/plugins \
+--privileged \
+--network es-net \
+-p 9200:9200 \
+-p 9300:9300 \
+elasticsearch:7.14.2
+
+docker run -d \
+--name by_kibana \
+-e ELASTICSEARCH_HOSTS=http://by_es:9200 \
+--network=es-net \
+-p 5601:5601  \
+kibana:7.14.2
+
+###https://github.com/medcl/elasticsearch-analysis-ik/releases
+
+###https://www.cnblogs.com/qdhxhz/p/11585639.html
+
+vi config/IKAnalyzer.cfg.xml
 
 
 
