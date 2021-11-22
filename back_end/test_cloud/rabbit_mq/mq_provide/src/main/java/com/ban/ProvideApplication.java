@@ -18,7 +18,7 @@ public class ProvideApplication implements ApplicationRunner {
     @Autowired
     private RabbitTemplate rabbitTemplate;
 
-    //    simple
+    //simple
     @Bean
     public Queue simpleQueue() {
         final boolean isDurable = true;
@@ -72,51 +72,51 @@ public class ProvideApplication implements ApplicationRunner {
                 Binding.DestinationType.QUEUE, "exc.fanout", "", null);
     }
 
-//    //    direct
-//    @Bean
-//    public DirectExchange buildDirectExchange() {
-//        final boolean isDurable = true;
-//        final boolean autoDelete = false;
-//        return new DirectExchange("exc.direct", isDurable, autoDelete);
-//    }
-//
-//    @Bean
-//    public Queue directQueue1() {
-//        final boolean isDurable = true;
-//        final boolean isExclusive = false;
-//        final boolean autoDelete = false;
-//        return new org.springframework.amqp.core.Queue("direct.queue1", isDurable, isExclusive, autoDelete);
-//    }
-//
-//    @Bean
-//    public Queue directQueue2() {
-//        final boolean isDurable = true;
-//        final boolean isExclusive = false;
-//        final boolean autoDelete = false;
-//        return new org.springframework.amqp.core.Queue("direct.queue2", isDurable, isExclusive, autoDelete);
-//    }
-//
-//    @Bean
-//    public Binding buildDirect1Binding() {
-//        return BindingBuilder.bind(directQueue1()).to(buildDirectExchange()).with("blue");
-//    }
-//
-//    @Bean
-//    public Binding buildDirect1Binding2() {
-//        return BindingBuilder.bind(directQueue1()).to(buildDirectExchange()).with("red");
-//    }
-//
-//    @Bean
-//    public Binding buildDirect2Binding() {
-//        return BindingBuilder.bind(directQueue2()).to(buildDirectExchange()).with("blue");
-//    }
-//
-//    @Bean
-//    public Binding buildDirect2Binding2() {
-//        return BindingBuilder.bind(directQueue2()).to(buildDirectExchange()).with("yellow");
-//    }
+    // direct
+    @Bean
+    public DirectExchange buildDirectExchange() {
+        final boolean isDurable = true;
+        final boolean autoDelete = false;
+        return new DirectExchange("exc.direct", isDurable, autoDelete);
+    }
 
-    //    topic
+    @Bean
+    public Queue directQueue1() {
+        final boolean isDurable = true;
+        final boolean isExclusive = false;
+        final boolean autoDelete = false;
+        return new org.springframework.amqp.core.Queue("direct.queue1", isDurable, isExclusive, autoDelete);
+    }
+
+    @Bean
+    public Queue directQueue2() {
+        final boolean isDurable = true;
+        final boolean isExclusive = false;
+        final boolean autoDelete = false;
+        return new org.springframework.amqp.core.Queue("direct.queue2", isDurable, isExclusive, autoDelete);
+    }
+
+    @Bean
+    public Binding buildDirect1Binding() {
+        return BindingBuilder.bind(directQueue1()).to(buildDirectExchange()).with("blue");
+    }
+
+    @Bean
+    public Binding buildDirect1Binding2() {
+        return BindingBuilder.bind(directQueue1()).to(buildDirectExchange()).with("red");
+    }
+
+    @Bean
+    public Binding buildDirect2Binding() {
+        return BindingBuilder.bind(directQueue2()).to(buildDirectExchange()).with("blue");
+    }
+
+    @Bean
+    public Binding buildDirect2Binding2() {
+        return BindingBuilder.bind(directQueue2()).to(buildDirectExchange()).with("yellow");
+    }
+
+    // topic
     @Bean
     public TopicExchange buildTopicExchange() {
         final boolean isDurable = true;
@@ -161,13 +161,14 @@ public class ProvideApplication implements ApplicationRunner {
     }
 
 
-
     @Override
     public void run(ApplicationArguments args) throws Exception {
+////   simple send
 //        String simpleQueueName = "simple.queue";
 //        String simpleMessage = "hello, simple amqp!";
 //        rabbitTemplate.convertAndSend(simpleQueueName, simpleMessage);
-//
+
+////   work send
 //        String workQueueName = "work.queue";
 //        for (int i = 0; i < 9; i++) {
 //            String workMessage = "hello, work amqp:" + i;
@@ -175,14 +176,17 @@ public class ProvideApplication implements ApplicationRunner {
 //        }
 
 
+////  fanout send
 //        String exchangeName = "exc.fanout";
 //        String fanoutMessage = "hello, fanout amqp!";
 //        rabbitTemplate.convertAndSend(exchangeName, "", fanoutMessage);
 
+////        direct send
 //        String exchangeName = "exc.direct";
-//        String directMessage = "hello, red!";
-//        rabbitTemplate.convertAndSend(exchangeName, "red", directMessage);
+//        String directMessage = "hello, yellow!";
+//        rabbitTemplate.convertAndSend(exchangeName, "yellow", directMessage);
 
+        //   topic send
         String exchangeName = "exc.topic";
         String topicMessage = "hello, china news!";
         rabbitTemplate.convertAndSend(exchangeName, "china.news", topicMessage);

@@ -14,12 +14,13 @@ public class ConsumeApplication {
         SpringApplication.run(ConsumeApplication.class, args);
     }
 
+    //simple listener
     @RabbitListener(queuesToDeclare = @Queue(value = "simple.queue"))
     public void rabbitSimpleListen(String message) {
         System.out.println("simple message:" + message);
     }
 
-
+    //work listener
     @RabbitListener(queuesToDeclare = @Queue(value = "work.queue"))
     public void rabbitWorkListen1(String message) throws InterruptedException {
         System.out.println("work1 message:" + message);
@@ -33,22 +34,22 @@ public class ConsumeApplication {
     }
 
 
-    // exchange
-    @RabbitListener(queues = "fanout.queue1")
+    // fanout
+    @RabbitListener(queuesToDeclare = @Queue(value = "fanout.queue1"))
     public void rabbitFanoutListen1(String message) throws InterruptedException {
         System.out.println("fanout1 message:" + message);
     }
 
-    @RabbitListener(queues = "fanout.queue2")
+    @RabbitListener(queuesToDeclare = @Queue(value = "fanout.queue2"))
     public void rabbitFanoutListen2(String message) throws InterruptedException {
         System.out.println("fanout2 message:" + message);
     }
 
-
+    //direct
     @RabbitListener(bindings = @QueueBinding(
             value = @Queue(value = "direct.queue1"),
             exchange = @Exchange(value = "exc.direct", type = ExchangeTypes.DIRECT),
-            key = "blue"))
+            key = {"blue", "red"}))
     public void rabbitDirectListen1(String message) throws InterruptedException {
         System.out.println("direct1 message:" + message);
     }
@@ -56,17 +57,25 @@ public class ConsumeApplication {
     @RabbitListener(bindings = @QueueBinding(
             value = @Queue(value = "direct.queue2"),
             exchange = @Exchange(value = "exc.direct", type = ExchangeTypes.DIRECT),
-            key = "blue"))
+            key = {"blue", "yellow"}))
     public void rabbitDirectListen2(String message) throws InterruptedException {
         System.out.println("direct2 message:" + message);
     }
 
-
+    //topic
     @RabbitListener(bindings = @QueueBinding(
             value = @Queue(value = "topic.queue1"),
             exchange = @Exchange(value = "exc.topic", type = ExchangeTypes.TOPIC),
-            key = "#.news"))
+            key = "china.#"))
     public void rabbitTopicListen1(String message) throws InterruptedException {
         System.out.println("topic1 message:" + message);
+    }
+
+    @RabbitListener(bindings = @QueueBinding(
+            value = @Queue(value = "topic.queue2"),
+            exchange = @Exchange(value = "exc.topic", type = ExchangeTypes.TOPIC),
+            key = "#.news"))
+    public void rabbitTopicListen2(String message) throws InterruptedException {
+        System.out.println("topic2 message:" + message);
     }
 }
