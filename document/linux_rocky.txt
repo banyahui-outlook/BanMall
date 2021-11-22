@@ -61,9 +61,7 @@ docker rmi $(docker images -f "dangling=true" -q)
 ###https://www.cnblogs.com/wtzbk/p/15125977.html
 ###https://wohenliu.com/index.php/archives/310/
 
-
-
-docker-compose up -d --force-recreate
+docker-compose up -d 
 
 
 
