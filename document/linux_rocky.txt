@@ -648,6 +648,7 @@ elasticsearch:7.14.2
 docker run -d \
 --name by_kibana \
 -e ELASTICSEARCH_HOSTS=http://by_es:9200 \
+-v /home/kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml \
 --network=es-net \
 -p 5601:5601  \
 kibana:7.14.2
@@ -657,6 +658,269 @@ kibana:7.14.2
 ###https://www.cnblogs.com/qdhxhz/p/11585639.html
 
 vi config/IKAnalyzer.cfg.xml
+
+
+###https://blog.csdn.net/u014646662/article/details/88559522
+
+GET /
+
+GET _all/_settings
+
+GET _analyze
+{
+  "analyzer": "standard",
+  "text": "因为Elasticsearch中默认的标准分词器,吴签很赞！" 
+}
+
+PUT /hotel
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "ch_analyzer": {
+          "type": "custom",
+          "filter": "lowercase",
+          "tokenizer": "ik_max_word"
+        }
+      }
+    }
+  },
+  "mappings": {
+    "properties": {
+      "id": {
+        "type": "keyword"
+      },
+      "all": {
+        "type": "text",
+        "analyzer": "ch_analyzer"
+      },
+      "name": {
+        "type": "text",
+        "analyzer": "ch_analyzer",
+        "copy_to": "all"
+      },
+      "address": {
+        "type": "text",
+        "analyzer": "ik_smart",
+        "copy_to": "all"
+      },
+      "price": {
+        "type": "integer"
+      },
+      "score": {
+        "type": "integer"
+      },
+      "brand": {
+        "type": "keyword",
+        "copy_to": "all"
+      },
+      "city": {
+        "type": "keyword",
+        "copy_to": "all"
+      },
+      "starName": {
+        "type": "keyword",
+        "copy_to": "all"
+      },
+      "business": {
+        "type": "text",
+        "analyzer": "ik_smart",
+        "copy_to": "all"
+      },
+      "location": {
+        "type": "geo_point"
+      },
+      "pic": {
+        "type": "keyword",
+        "index": false
+      }
+    }
+  }
+}
+
+
+POST /hotel/_doc/1
+{
+  "id": 1,
+  "name": "7天连锁酒店(上海宝山路地铁站店)",
+  "address": "静安交通路40号",
+  "price": 336,
+  "score": 37,
+  "brand": "7天酒店",
+  "city": "上海",
+  "starName": "二钻",
+  "business": "四川北路商业区",
+  "location": "31.251433,121.47522",
+  "pic": "https://m.tuniucdn.com/fb2/t1/G1/M00/3E/40/Cii9EVkyLrKIXo1vAAHgrxo_pUcAALcKQLD688AAeDH564_w200_h200_c1_t0.jpg"
+}
+
+POST /hotel/_doc/1/_update
+{
+  "doc": {
+    "brand": "7天"
+  }
+}
+
+PUT /hotel/_doc/1
+{
+  "name": "整体更新"
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
