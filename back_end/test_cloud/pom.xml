@@ -15,6 +15,7 @@
         <module>itcast_gateway</module>
         <module>comm_api</module>
         <module>rabbit_mq</module>
+        <module>elastic_search</module>
     </modules>
 
     <properties>
@@ -33,6 +34,8 @@
 
         <mysql.version>8.0.23</mysql.version>
         <mybatis.plus.version>3.4.2</mybatis.plus.version>
+
+        <elasticsearch.version>7.14.2</elasticsearch.version>
     </properties>
 
     <dependencies>
@@ -89,6 +92,33 @@
                 <artifactId>mybatis-plus-annotation</artifactId>
                 <version>${mybatis.plus.version}</version>
             </dependency>
+
+            <!--###https://segmentfault.com/q/1010000020194502-->
+            <!-- https://mvnrepository.com/artifact/org.elasticsearch.client/elasticsearch-rest-high-level-client -->
+            <dependency>
+                <groupId>org.elasticsearch.client</groupId>
+                <artifactId>elasticsearch-rest-high-level-client</artifactId>
+                <version>${elasticsearch.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <artifactId>elasticsearch</artifactId>
+                        <groupId>org.elasticsearch</groupId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <!-- https://mvnrepository.com/artifact/org.elasticsearch/elasticsearch -->
+            <dependency>
+                <groupId>org.elasticsearch</groupId>
+                <artifactId>elasticsearch</artifactId>
+                <version>${elasticsearch.version}</version>
+            </dependency>
+            <!-- https://mvnrepository.com/artifact/org.elasticsearch.client/elasticsearch-rest-client -->
+            <dependency>
+                <groupId>org.elasticsearch.client</groupId>
+                <artifactId>elasticsearch-rest-client</artifactId>
+                <version>${elasticsearch.version}</version>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 
