@@ -653,6 +653,8 @@ docker run -d \
 -p 5601:5601  \
 kibana:7.14.2
 
+###https://www.elastic.co/guide/cn/kibana/current/settings.html
+
 ###https://github.com/medcl/elasticsearch-analysis-ik/releases
 
 ###https://www.cnblogs.com/qdhxhz/p/11585639.html

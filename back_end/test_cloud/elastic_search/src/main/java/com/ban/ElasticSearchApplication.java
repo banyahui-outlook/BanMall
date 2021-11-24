@@ -48,50 +48,73 @@ public class ElasticSearchApplication implements ApplicationRunner {
         );
 
 
-        CreateIndexRequest createIndexRequest = new CreateIndexRequest("hotel");
-        createIndexRequest.settings(Settings.builder()
-                .put("index.number_of_shards", 3)
-                .put("index.number_of_replicas", 2)
-        );
-        createIndexRequest.mapping("{ properties: {} }", XContentType.JSON);
-        CreateIndexResponse createIndexResponse = client.indices().create(createIndexRequest, RequestOptions.DEFAULT);
+//        CreateIndexRequest createIndexRequest = new CreateIndexRequest("hotel");
+//        createIndexRequest.source("{\n" +
+//                "  \"settings\": {\n" +
+//                "    \"analysis\": {\n" +
+//                "      \"analyzer\": {\n" +
+//                "        \"chi_analyzer\":{\n" +
+//                "          \"type\": \"custom\",\n" +
+//                "          \"filter\": \"lowercase\",\n" +
+//                "          \"tokenizer\": \"ik_max_word\"\n" +
+//                "        }\n" +
+//                "      }\n" +
+//                "    }\n" +
+//                "  },\n" +
+//                "  \"mappings\": {\n" +
+//                "    \"properties\": {\n" +
+//                "      \"id\": {\n" +
+//                "        \"type\": \"keyword\"\n" +
+//                "      },\n" +
+//                "      \"name\":{\n" +
+//                "        \"type\": \"text\",\n" +
+//                "        \"analyzer\": \"ik_smart\"\n" +
+//                "      }\n" +
+//                "    }\n" +
+//                "  }\n" +
+//                "}", XContentType.JSON);
+//        CreateIndexResponse createIndexResponse = client.indices().create(createIndexRequest, RequestOptions.DEFAULT);
+//        System.out.println(createIndexResponse);
+
+//        GetIndexRequest getIndexRequest = new GetIndexRequest("hotel");
+//        boolean exists = client.indices().exists(getIndexRequest, RequestOptions.DEFAULT);
+//        System.out.println(exists);
+
+//        DeleteIndexRequest deleteIndexRequest = new DeleteIndexRequest("hotel");
+//        AcknowledgedResponse acknowledgedResponse = client.indices().delete(deleteIndexRequest, RequestOptions.DEFAULT);
+//        System.out.println(acknowledgedResponse);
+//
+//        GetIndexRequest getIndexRequest = new GetIndexRequest("hotel");
+//        boolean exists = client.indices().exists(getIndexRequest, RequestOptions.DEFAULT);
+//        System.out.println(exists);
 
 
-        DeleteIndexRequest deleteIndexRequest = new DeleteIndexRequest("hotel");
-        AcknowledgedResponse acknowledgedResponse = client.indices().delete(deleteIndexRequest, RequestOptions.DEFAULT);
+//        IndexRequest indexRequest = new IndexRequest("hotel");
+//        indexRequest.id("1");
+//        String jsonString = "{" +
+//                "\"name\":\"zhangsan\"" +
+//                "}";
+//        indexRequest.source(jsonString, XContentType.JSON);
+//        IndexResponse indexResponse = client.index(indexRequest, RequestOptions.DEFAULT);
+//        System.out.println(indexResponse);
+
+//        GetRequest getRequest = new GetRequest("hotel", "1");
+//        GetResponse getResponse = client.get(getRequest, RequestOptions.DEFAULT);
+//        System.out.println(getResponse);
+
+//        UpdateRequest updateRequest = new UpdateRequest("hotel", "1");
+//        String jsonString = "{" +
+//                "\"name\":\"liis\"" +
+//                "}";
+//        updateRequest.doc(jsonString, XContentType.JSON);
+//        updateRequest.docAsUpsert(true);
+//        UpdateResponse updateResponse = client.update(updateRequest, RequestOptions.DEFAULT);
+//        System.out.println(updateResponse);
 
 
-        GetIndexRequest getIndexRequest = new GetIndexRequest();
-        boolean exists = client.indices().exists(getIndexRequest, RequestOptions.DEFAULT);
-
-
-        IndexRequest indexRequest = new IndexRequest(
-                "hotel",
-                "1");
-        String jsonString = "{" +
-                "\"user\":\"kimchy\"," +
-                "\"postDate\":\"2013-01-30\"," +
-                "\"message\":\"trying out Elasticsearch\"" +
-                "}";
-        indexRequest.source(jsonString, XContentType.JSON);
-        IndexResponse indexResponse = client.index(indexRequest, RequestOptions.DEFAULT);
-
-
-        GetRequest getRequest = new GetRequest(
-                "hotel",
-                "1");
-        GetResponse getResponse = client.get(getRequest, RequestOptions.DEFAULT);
-
-
-        UpdateRequest updateRequest = new UpdateRequest(
-                "hotel",
-                "1");
-        UpdateResponse updateResponse = client.update(updateRequest, RequestOptions.DEFAULT);
-
-
-        DeleteRequest deleteRequest=new DeleteRequest("hotel", "1");
-        DeleteResponse deleteResponse = client.delete(deleteRequest, RequestOptions.DEFAULT);
-
+//        DeleteRequest deleteRequest = new DeleteRequest("hotel", "1");
+//        DeleteResponse deleteResponse = client.delete(deleteRequest, RequestOptions.DEFAULT);
+//        System.out.println(deleteResponse);
 
     }
 }
